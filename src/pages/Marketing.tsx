@@ -3,14 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { CalendarClock, Send, Instagram, Facebook, MessageSquare } from "lucide-react";
+import { CalendarClock, Send, Instagram, Facebook, MessageSquare, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-
-const scheduledPosts = [
-  { id: 1, platform: "Instagram", content: "🍕 New weekend special! Try our truffle pizza...", date: "Mar 10, 2026", status: "scheduled" },
-  { id: 2, platform: "Facebook", content: "Happy Hour is back! 2-for-1 cocktails every...", date: "Mar 9, 2026", status: "scheduled" },
-  { id: 3, platform: "Instagram", content: "Meet our new head chef! We're thrilled to...", date: "Mar 8, 2026", status: "published" },
-];
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const platformIcon = (p: string) => {
   if (p === "Instagram") return <Instagram className="h-4 w-4" />;
@@ -22,6 +18,38 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
 export default function Marketing() {
+  const { toast } = useToast();
+  const [platform, setPlatform] = useState("Instagram");
+  const [content, setContent] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [posts, setPosts] = useState<{ id: string; platform: string; content: string; date: string; status: string }[]>(() => {
+    const saved = localStorage.getItem("scas_marketing_posts");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const handleSchedule = () => {
+    if (!content.trim()) return;
+    const newPost = {
+      id: crypto.randomUUID(),
+      platform,
+      content,
+      date: scheduledAt || new Date().toISOString(),
+      status: scheduledAt ? "scheduled" : "published",
+    };
+    const updated = [newPost, ...posts];
+    setPosts(updated);
+    localStorage.setItem("scas_marketing_posts", JSON.stringify(updated));
+    setContent(""); setScheduledAt("");
+    toast({ title: scheduledAt ? "Post scheduled!" : "Post published!" });
+  };
+
+  const deletePost = (id: string) => {
+    const updated = posts.filter((p) => p.id !== id);
+    setPosts(updated);
+    localStorage.setItem("scas_marketing_posts", JSON.stringify(updated));
+    toast({ title: "Post deleted" });
+  };
+
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-6xl mx-auto">
       <div>
@@ -32,21 +60,21 @@ export default function Marketing() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div variants={item} className="lg:col-span-2">
           <Card className="border-0 shadow-md rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-lg font-display">Create Post</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-lg font-display">Create Post</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 {["Instagram", "Facebook", "SMS"].map((p) => (
-                  <Button key={p} variant="outline" size="sm" className="gap-1.5 rounded-xl">
+                  <Button key={p} variant={platform === p ? "default" : "outline"} size="sm" className="gap-1.5 rounded-xl" onClick={() => setPlatform(p)}>
                     {platformIcon(p)} {p}
                   </Button>
                 ))}
               </div>
-              <Textarea placeholder="Write your post content..." className="min-h-[120px] resize-none rounded-xl" />
+              <Textarea placeholder="Write your post content..." className="min-h-[120px] resize-none rounded-xl" value={content} onChange={(e) => setContent(e.target.value)} />
               <div className="flex flex-col sm:flex-row gap-3">
-                <Input type="datetime-local" className="sm:w-auto rounded-xl" />
-                <Button className="gap-2"><Send className="h-4 w-4" /> Schedule Post</Button>
+                <Input type="datetime-local" className="sm:w-auto rounded-xl" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
+                <Button className="gap-2" onClick={handleSchedule} disabled={!content.trim()}>
+                  <Send className="h-4 w-4" /> {scheduledAt ? "Schedule Post" : "Publish Now"}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -54,25 +82,26 @@ export default function Marketing() {
 
         <motion.div variants={item}>
           <Card className="border-0 shadow-md rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-lg font-display">Scheduled</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-lg font-display">Scheduled</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {scheduledPosts.map((p) => (
-                <div key={p.id} className="p-3 rounded-2xl bg-muted/40 space-y-2">
-                  <div className="flex items-center gap-2">
-                    {platformIcon(p.platform)}
-                    <span className="text-sm font-medium">{p.platform}</span>
-                    <Badge variant={p.status === "published" ? "default" : "secondary"} className="ml-auto text-[10px]">
-                      {p.status}
-                    </Badge>
+              {posts.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">No posts yet.</p>
+              ) : (
+                posts.map((p) => (
+                  <div key={p.id} className="p-3 rounded-2xl bg-muted/40 space-y-2">
+                    <div className="flex items-center gap-2">
+                      {platformIcon(p.platform)}
+                      <span className="text-sm font-medium">{p.platform}</span>
+                      <Badge variant={p.status === "published" ? "default" : "secondary"} className="ml-auto text-[10px]">{p.status}</Badge>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deletePost(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{p.content}</p>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                      <CalendarClock className="h-3 w-3" /> {new Date(p.date).toLocaleString()}
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{p.content}</p>
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-                    <CalendarClock className="h-3 w-3" /> {p.date}
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </motion.div>
