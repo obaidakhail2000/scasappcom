@@ -39,7 +39,7 @@ export default function QRCodes() {
 
   useEffect(() => {
     if (previewCanvasRef.current && previewUrl) {
-      generateQR(previewUrl, previewCanvasRef.current);
+      QRCode.toCanvas(previewCanvasRef.current, previewUrl, { width: 200, margin: 2 });
     }
   }, [previewUrl]);
 
