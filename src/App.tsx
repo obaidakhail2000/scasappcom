@@ -43,6 +43,7 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/auth" element={<AuthRoute />} />
+          <Route path="/login" element={<AuthRoute />} />
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/reviews" element={<Reviews />} />
