@@ -47,10 +47,15 @@ export default function Auth() {
   };
 
   const handleGoogleSignIn = async () => {
-    const { error } = await lovable.auth.signInWithOAuth("google", {
+    const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (result?.error) {
+      toast({ title: "Error", description: result.error.message, variant: "destructive" });
+    } else if (!result?.redirected) {
+      // Session was set successfully without redirect, navigate to dashboard
+      navigate("/", { replace: true });
+    }
   };
 
   const handleAppleSignIn = async () => {
