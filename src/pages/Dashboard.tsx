@@ -3,10 +3,10 @@ import { Star, Users, Megaphone, TrendingUp, ArrowUpRight, ArrowDownRight, Chevr
 import { motion } from "framer-motion";
 
 const stats = [
-  { title: "Total Reviews", value: "1,284", change: "+12%", up: true, icon: Star, color: "bg-primary/10 text-primary" },
-  { title: "Active Customers", value: "3,421", change: "+8%", up: true, icon: Users, color: "bg-success/10 text-success" },
-  { title: "Campaigns Sent", value: "48", change: "+23%", up: true, icon: Megaphone, color: "bg-accent/20 text-accent-foreground" },
-  { title: "Avg Rating", value: "4.7", change: "-0.1", up: false, icon: TrendingUp, color: "bg-destructive/10 text-destructive" },
+  { title: "Total Reviews", value: "1,284", change: "+12%", up: true, icon: Star, color: "bg-primary/10 text-primary", iconBg: "bg-primary/8" },
+  { title: "Active Customers", value: "3,421", change: "+8%", up: true, icon: Users, color: "bg-success/10 text-success", iconBg: "bg-success/8" },
+  { title: "Campaigns Sent", value: "48", change: "+23%", up: true, icon: Megaphone, color: "bg-accent/15 text-accent-foreground", iconBg: "bg-accent/10" },
+  { title: "Avg Rating", value: "4.7", change: "-0.1", up: false, icon: TrendingUp, color: "bg-destructive/10 text-destructive", iconBg: "bg-destructive/8" },
 ];
 
 const recentReviews = [
