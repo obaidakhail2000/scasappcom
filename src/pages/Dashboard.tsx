@@ -121,6 +121,11 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
+      {/* Review Performance Chart */}
+      <motion.div variants={item}>
+        <ReviewPerformanceChart />
+      </motion.div>
+
       {/* Automation Summary */}
       <motion.div variants={item}>
         <Card className="border-0 shadow-md rounded-2xl">
