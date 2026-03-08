@@ -14,7 +14,246 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      campaigns: {
+        Row: {
+          audience: string | null
+          content: string | null
+          created_at: string
+          id: string
+          name: string
+          open_rate: number | null
+          scheduled_at: string | null
+          sent_count: number | null
+          status: string
+          subject: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audience?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          open_rate?: number | null
+          scheduled_at?: string | null
+          sent_count?: number | null
+          status?: string
+          subject?: string | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audience?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          open_rate?: number | null
+          scheduled_at?: string | null
+          sent_count?: number | null
+          status?: string
+          subject?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          avg_rating: number | null
+          created_at: string
+          email: string | null
+          id: string
+          last_visit: string | null
+          name: string
+          phone: string | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+          visits: number | null
+        }
+        Insert: {
+          avg_rating?: number | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_visit?: string | null
+          name: string
+          phone?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+          visits?: number | null
+        }
+        Update: {
+          avg_rating?: number | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_visit?: string | null
+          name?: string
+          phone?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+          visits?: number | null
+        }
+        Relationships: []
+      }
+      menu_items: {
+        Row: {
+          available: boolean | null
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available?: boolean | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available?: boolean | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          owner_name: string | null
+          phone: string | null
+          restaurant_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          owner_name?: string | null
+          phone?: string | null
+          restaurant_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          owner_name?: string | null
+          phone?: string | null
+          restaurant_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          customer_name: string
+          highlighted: boolean | null
+          id: string
+          rating: number
+          review_date: string | null
+          source: string | null
+          text: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          highlighted?: boolean | null
+          id?: string
+          rating: number
+          review_date?: string | null
+          source?: string | null
+          text?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          highlighted?: boolean | null
+          id?: string
+          rating?: number
+          review_date?: string | null
+          source?: string | null
+          text?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rewards: {
+        Row: {
+          active: boolean | null
+          claimed: number | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          claimed?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          claimed?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
