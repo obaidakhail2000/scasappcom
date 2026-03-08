@@ -5,6 +5,7 @@ import { QrCode, Download, Copy, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const isValidUrl = (str: string) => {
   try {
