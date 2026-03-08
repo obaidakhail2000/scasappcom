@@ -58,10 +58,10 @@ export default function QRCodes() {
     toast({ title: "✅ تم إنشاء QR Code!", description: `رابط المراجعة لـ "${name}" جاهز للتحميل.` });
   };
 
-  const handleDownload = useCallback((code: QREntry) => {
-    const canvas = document.createElement("canvas");
+  const handleDownload = useCallback(async (code: QREntry) => {
     const size = 400;
-    generateQR(code.url, canvas, size);
+    const qrCanvas = document.createElement("canvas");
+    await QRCode.toCanvas(qrCanvas, code.url, { width: size, margin: 2 });
 
     // Add label below QR
     const finalCanvas = document.createElement("canvas");
@@ -70,7 +70,7 @@ export default function QRCodes() {
     const ctx = finalCanvas.getContext("2d")!;
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-    ctx.drawImage(canvas, 0, 0);
+    ctx.drawImage(qrCanvas, 0, 0);
     ctx.fillStyle = "#000000";
     ctx.font = "bold 20px sans-serif";
     ctx.textAlign = "center";
