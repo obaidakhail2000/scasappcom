@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, Users, Megaphone, TrendingUp, ArrowUpRight, ArrowDownRight, ChevronRight, Zap, BarChart3 } from "lucide-react";
+import { Star, Users, Megaphone, TrendingUp, ArrowUpRight, ArrowDownRight, ChevronRight, Zap } from "lucide-react";
+import { ReviewPerformanceChart } from "@/components/ReviewPerformanceChart";
 import { motion } from "framer-motion";
 
 const stats = [
@@ -119,6 +120,11 @@ export default function Dashboard() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Review Performance Chart */}
+      <motion.div variants={item}>
+        <ReviewPerformanceChart />
+      </motion.div>
 
       {/* Automation Summary */}
       <motion.div variants={item}>
