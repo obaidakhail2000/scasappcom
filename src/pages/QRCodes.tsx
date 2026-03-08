@@ -1,14 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { QrCode, Download, Copy, Trash2 } from "lucide-react";
+import { QrCode, Download, Copy, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
+const isValidUrl = (str: string) => {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export default function QRCodes() {
   const [qrName, setQrName] = useState("");
   const [qrUrl, setQrUrl] = useState("");
+  const [urlError, setUrlError] = useState("");
   const [codes, setCodes] = useState<{ id: string; name: string; url: string; created: string }[]>(() => {
     const saved = localStorage.getItem("scas_qr_codes");
     return saved ? JSON.parse(saved) : [];
@@ -20,20 +30,29 @@ export default function QRCodes() {
     localStorage.setItem("scas_qr_codes", JSON.stringify(codes));
   }, [codes]);
 
+  const validateUrl = (url: string) => {
+    if (!url.trim()) {
+      setUrlError("URL is required");
+      return false;
+    }
+    if (!isValidUrl(url.trim())) {
+      setUrlError("Please enter a valid URL (e.g. https://example.com)");
+      return false;
+    }
+    setUrlError("");
+    return true;
+  };
+
   const generateQR = (text: string, canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext("2d")!;
     const size = 200;
     canvas.width = size;
     canvas.height = size;
-
-    // Simple QR-like pattern generator (visual representation)
     const modules = 21;
     const moduleSize = size / modules;
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, size, size);
     ctx.fillStyle = "#000000";
-
-    // Finder patterns
     const drawFinder = (x: number, y: number) => {
       for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) {
         if (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
@@ -42,8 +61,6 @@ export default function QRCodes() {
       }
     };
     drawFinder(0, 0); drawFinder(14, 0); drawFinder(0, 14);
-
-    // Data modules (seeded from text hash)
     let hash = 0;
     for (let i = 0; i < text.length; i++) hash = ((hash << 5) - hash) + text.charCodeAt(i);
     for (let i = 8; i < modules; i++) for (let j = 8; j < modules; j++) {
@@ -55,16 +72,23 @@ export default function QRCodes() {
   };
 
   useEffect(() => {
-    if (canvasRef.current && qrUrl) generateQR(qrUrl, canvasRef.current);
+    if (canvasRef.current && qrUrl && isValidUrl(qrUrl.trim())) generateQR(qrUrl, canvasRef.current);
   }, [qrUrl]);
 
   const handleCreate = () => {
     if (!qrName.trim()) return;
-    const url = qrUrl.trim() || `https://review.scas.app/${Math.random().toString(36).slice(2, 8)}`;
-    const newCode = { id: crypto.randomUUID(), name: qrName, url, created: new Date().toLocaleDateString() };
+    if (!validateUrl(qrUrl)) return;
+    const newCode = { id: crypto.randomUUID(), name: qrName, url: qrUrl.trim(), created: new Date().toLocaleDateString() };
     setCodes((prev) => [newCode, ...prev]);
-    setQrName(""); setQrUrl("");
+    setQrName("");
+    setQrUrl("");
+    setUrlError("");
     toast({ title: "QR Code created!" });
+  };
+
+  const handlePreview = () => {
+    if (!validateUrl(qrUrl)) return;
+    window.open(qrUrl.trim(), "_blank", "noopener,noreferrer");
   };
 
   const handleDownload = (code: { name: string; url: string }) => {
@@ -94,9 +118,22 @@ export default function QRCodes() {
           <CardHeader><CardTitle className="text-lg font-display">Generate New QR Code</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <Input placeholder="QR Code name (e.g., Table Tent)" value={qrName} onChange={(e) => setQrName(e.target.value)} />
-            <Input placeholder="URL (leave blank for auto-generated)" value={qrUrl} onChange={(e) => setQrUrl(e.target.value)} />
+            <div className="space-y-1.5">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://example.com"
+                  value={qrUrl}
+                  onChange={(e) => { setQrUrl(e.target.value); if (urlError) validateUrl(e.target.value); }}
+                  className={urlError ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
+                <Button variant="outline" size="icon" className="shrink-0" onClick={handlePreview} title="Preview link">
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </div>
+              {urlError && <p className="text-sm text-destructive">{urlError}</p>}
+            </div>
             <div className="flex items-center justify-center p-8 rounded-2xl bg-muted/50">
-              {qrUrl ? (
+              {qrUrl && isValidUrl(qrUrl.trim()) ? (
                 <canvas ref={canvasRef} className="rounded-xl" />
               ) : (
                 <div className="h-48 w-48 rounded-2xl bg-card border-2 border-dashed border-border flex items-center justify-center">
