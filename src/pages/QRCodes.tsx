@@ -1,18 +1,86 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { QrCode, Download, Copy, ExternalLink } from "lucide-react";
+import { QrCode, Download, Copy, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
-
-const existingQR = [
-  { id: 1, name: "Table Review QR", url: "https://review.scas.app/abc123", created: "Mar 1, 2026" },
-  { id: 2, name: "Receipt QR Code", url: "https://review.scas.app/def456", created: "Feb 20, 2026" },
-  { id: 3, name: "Takeout Bag QR", url: "https://review.scas.app/ghi789", created: "Feb 15, 2026" },
-];
+import { useState, useEffect, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function QRCodes() {
   const [qrName, setQrName] = useState("");
+  const [qrUrl, setQrUrl] = useState("");
+  const [codes, setCodes] = useState<{ id: string; name: string; url: string; created: string }[]>(() => {
+    const saved = localStorage.getItem("scas_qr_codes");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const { toast } = useToast();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem("scas_qr_codes", JSON.stringify(codes));
+  }, [codes]);
+
+  const generateQR = (text: string, canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext("2d")!;
+    const size = 200;
+    canvas.width = size;
+    canvas.height = size;
+
+    // Simple QR-like pattern generator (visual representation)
+    const modules = 21;
+    const moduleSize = size / modules;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "#000000";
+
+    // Finder patterns
+    const drawFinder = (x: number, y: number) => {
+      for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) {
+        if (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
+          ctx.fillRect((x + i) * moduleSize, (y + j) * moduleSize, moduleSize, moduleSize);
+        }
+      }
+    };
+    drawFinder(0, 0); drawFinder(14, 0); drawFinder(0, 14);
+
+    // Data modules (seeded from text hash)
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) hash = ((hash << 5) - hash) + text.charCodeAt(i);
+    for (let i = 8; i < modules; i++) for (let j = 8; j < modules; j++) {
+      if (i < 14 || j < 14) {
+        hash = (hash * 1103515245 + 12345) & 0x7fffffff;
+        if (hash % 3 !== 0) ctx.fillRect(i * moduleSize, j * moduleSize, moduleSize, moduleSize);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (canvasRef.current && qrUrl) generateQR(qrUrl, canvasRef.current);
+  }, [qrUrl]);
+
+  const handleCreate = () => {
+    if (!qrName.trim()) return;
+    const url = qrUrl.trim() || `https://review.scas.app/${Math.random().toString(36).slice(2, 8)}`;
+    const newCode = { id: crypto.randomUUID(), name: qrName, url, created: new Date().toLocaleDateString() };
+    setCodes((prev) => [newCode, ...prev]);
+    setQrName(""); setQrUrl("");
+    toast({ title: "QR Code created!" });
+  };
+
+  const handleDownload = (code: { name: string; url: string }) => {
+    const canvas = document.createElement("canvas");
+    generateQR(code.url, canvas);
+    const link = document.createElement("a");
+    link.download = `${code.name.replace(/\s/g, "_")}_qr.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    toast({ title: "QR Code downloaded" });
+  };
+
+  const handleCopy = (url: string) => {
+    navigator.clipboard.writeText(url);
+    toast({ title: "Link copied!" });
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-5xl mx-auto">
@@ -23,44 +91,49 @@ export default function QRCodes() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-0 shadow-md rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-lg font-display">Generate New QR Code</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-lg font-display">Generate New QR Code</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <Input placeholder="QR Code name (e.g., Table Tent)" value={qrName} onChange={(e) => setQrName(e.target.value)} />
+            <Input placeholder="URL (leave blank for auto-generated)" value={qrUrl} onChange={(e) => setQrUrl(e.target.value)} />
             <div className="flex items-center justify-center p-8 rounded-2xl bg-muted/50">
-              <div className="h-48 w-48 rounded-2xl bg-card border-2 border-dashed border-border flex items-center justify-center">
-                <QrCode className="h-24 w-24 text-muted-foreground/40" />
-              </div>
+              {qrUrl ? (
+                <canvas ref={canvasRef} className="rounded-xl" />
+              ) : (
+                <div className="h-48 w-48 rounded-2xl bg-card border-2 border-dashed border-border flex items-center justify-center">
+                  <QrCode className="h-24 w-24 text-muted-foreground/40" />
+                </div>
+              )}
             </div>
-            <div className="flex gap-2">
-              <Button className="flex-1 gap-2"><Download className="h-4 w-4" /> Download PNG</Button>
-              <Button variant="outline" className="gap-2"><Copy className="h-4 w-4" /> Copy Link</Button>
-            </div>
+            <Button className="w-full gap-2" onClick={handleCreate} disabled={!qrName.trim()}>
+              <QrCode className="h-4 w-4" /> Generate QR Code
+            </Button>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-md rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-lg font-display">Your QR Codes</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-lg font-display">Your QR Codes</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {existingQR.map((qr) => (
-              <div key={qr.id} className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40">
-                <div className="h-12 w-12 rounded-2xl bg-card flex items-center justify-center shrink-0 shadow-sm">
-                  <QrCode className="h-6 w-6 text-primary" />
+            {codes.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No QR codes yet.</p>
+            ) : (
+              codes.map((qr) => (
+                <div key={qr.id} className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40">
+                  <div className="h-12 w-12 rounded-2xl bg-card flex items-center justify-center shrink-0 shadow-sm">
+                    <QrCode className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{qr.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{qr.url}</p>
+                    <p className="text-[10px] text-muted-foreground/60">{qr.created}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(qr)}><Download className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopy(qr.url)}><Copy className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setCodes((p) => p.filter((c) => c.id !== qr.id))}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{qr.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{qr.url}</p>
-                  <p className="text-[10px] text-muted-foreground/60">{qr.created}</p>
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8"><ExternalLink className="h-4 w-4" /></Button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
