@@ -108,6 +108,7 @@ export default function QRCodes() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-5xl mx-auto">
+      <BackToDashboard />
       <div>
         <h1 className="text-3xl font-display">QR Codes</h1>
         <p className="text-muted-foreground mt-1">Generate QR codes for collecting customer reviews.</p>
