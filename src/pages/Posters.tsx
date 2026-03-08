@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -95,6 +96,7 @@ export default function Posters() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-6xl mx-auto">
+      <BackToDashboard />
       <div>
         <h1 className="text-3xl font-display">Review Posters</h1>
         <p className="text-muted-foreground mt-1">Convert your best featured reviews into printable posters. Feature reviews from the Reviews page first!</p>

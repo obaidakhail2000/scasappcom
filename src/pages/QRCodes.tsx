@@ -5,6 +5,7 @@ import { QrCode, Download, Copy, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const isValidUrl = (str: string) => {
   try {
@@ -108,6 +109,7 @@ export default function QRCodes() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-5xl mx-auto">
+      <BackToDashboard />
       <div>
         <h1 className="text-3xl font-display">QR Codes</h1>
         <p className="text-muted-foreground mt-1">Generate QR codes for collecting customer reviews.</p>

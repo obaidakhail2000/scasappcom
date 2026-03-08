@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { streamAIChat } from "@/lib/ai-stream";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -122,6 +123,7 @@ export default function AIAssistant() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-6xl mx-auto">
+      <BackToDashboard />
       <div className="flex items-center gap-3">
         <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
           <Sparkles className="h-6 w-6 text-primary-foreground" />

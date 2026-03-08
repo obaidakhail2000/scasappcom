@@ -7,6 +7,7 @@ import { CalendarClock, Send, Instagram, Facebook, MessageSquare, Trash2 } from 
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const platformIcon = (p: string) => {
   if (p === "Instagram") return <Instagram className="h-4 w-4" />;
@@ -52,6 +53,7 @@ export default function Marketing() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-6xl mx-auto">
+      <BackToDashboard />
       <div>
         <h1 className="text-3xl font-display">Marketing</h1>
         <p className="text-muted-foreground mt-1">Schedule posts and manage your social media presence.</p>
