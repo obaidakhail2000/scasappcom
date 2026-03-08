@@ -66,10 +66,10 @@ export default function Dashboard() {
                 </a>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 px-6">
               {recentReviews.map((r, i) => (
-                <div key={i} className="flex gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <div key={i} className="flex gap-4 p-4 rounded-2xl bg-muted/30 hover:bg-muted/60 transition-all duration-200 hover:shadow-sm">
+                  <div className="h-11 w-11 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold text-primary">{r.name.charAt(0)}</span>
                   </div>
                   <div className="min-w-0 flex-1">
