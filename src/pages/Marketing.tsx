@@ -7,6 +7,7 @@ import { CalendarClock, Send, Instagram, Facebook, MessageSquare, Trash2 } from 
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const platformIcon = (p: string) => {
   if (p === "Instagram") return <Instagram className="h-4 w-4" />;

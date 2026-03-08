@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { streamAIChat } from "@/lib/ai-stream";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
