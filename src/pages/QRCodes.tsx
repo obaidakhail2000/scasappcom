@@ -6,39 +6,13 @@ import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { BackToDashboard } from "@/components/BackToDashboard";
+import QRCode from "qrcode";
 
 const APP_DOMAIN = window.location.origin;
 
 function generateReviewLink(tableName: string) {
   const slug = tableName.trim().toLowerCase().replace(/\s+/g, "-");
   return `${APP_DOMAIN}/review?table=${encodeURIComponent(slug)}`;
-}
-
-function generateQR(text: string, canvas: HTMLCanvasElement, size = 200) {
-  const ctx = canvas.getContext("2d")!;
-  canvas.width = size;
-  canvas.height = size;
-  const modules = 21;
-  const moduleSize = size / modules;
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, size, size);
-  ctx.fillStyle = "#000000";
-  const drawFinder = (x: number, y: number) => {
-    for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) {
-      if (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
-        ctx.fillRect((x + i) * moduleSize, (y + j) * moduleSize, moduleSize, moduleSize);
-      }
-    }
-  };
-  drawFinder(0, 0); drawFinder(14, 0); drawFinder(0, 14);
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) hash = ((hash << 5) - hash) + text.charCodeAt(i);
-  for (let i = 8; i < modules; i++) for (let j = 8; j < modules; j++) {
-    if (i < 14 || j < 14) {
-      hash = (hash * 1103515245 + 12345) & 0x7fffffff;
-      if (hash % 3 !== 0) ctx.fillRect(i * moduleSize, j * moduleSize, moduleSize, moduleSize);
-    }
-  }
 }
 
 interface QREntry {
