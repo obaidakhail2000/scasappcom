@@ -24,8 +24,9 @@ export function AppLayout() {
               <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
                 <span className="text-xs font-bold text-primary">{initials}</span>
               </div>
-              <Button variant="ghost" size="icon" onClick={signOut} className="h-9 w-9">
+              <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground hover:text-destructive">
                 <LogOut className="h-4 w-4" />
+                <span className="text-xs font-medium">Logout</span>
               </Button>
             </div>
           </header>
