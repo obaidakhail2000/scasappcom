@@ -53,6 +53,7 @@ export default function Marketing() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-6xl mx-auto">
+      <BackToDashboard />
       <div>
         <h1 className="text-3xl font-display">Marketing</h1>
         <p className="text-muted-foreground mt-1">Schedule posts and manage your social media presence.</p>

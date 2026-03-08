@@ -96,6 +96,7 @@ export default function Posters() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-6xl mx-auto">
+      <BackToDashboard />
       <div>
         <h1 className="text-3xl font-display">Review Posters</h1>
         <p className="text-muted-foreground mt-1">Convert your best featured reviews into printable posters. Feature reviews from the Reviews page first!</p>
