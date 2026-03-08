@@ -40,24 +40,22 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<AuthRoute />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/reviews" element={<Reviews />} />
-              <Route path="/marketing" element={<Marketing />} />
-              <Route path="/qr-codes" element={<QRCodes />} />
-              <Route path="/campaigns" element={<Campaigns />} />
-              <Route path="/menu" element={<Menu />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/rewards" element={<Rewards />} />
-              <Route path="/posters" element={<Posters />} />
-              <Route path="/ai-assistant" element={<AIAssistant />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <Routes>
+          <Route path="/auth" element={<AuthRoute />} />
+          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/marketing" element={<Marketing />} />
+            <Route path="/qr-codes" element={<QRCodes />} />
+            <Route path="/campaigns" element={<Campaigns />} />
+            <Route path="/menu" element={<Menu />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/rewards" element={<Rewards />} />
+            <Route path="/posters" element={<Posters />} />
+            <Route path="/ai-assistant" element={<AIAssistant />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
