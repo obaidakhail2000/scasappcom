@@ -35,6 +35,10 @@ const mainItems = [
   { title: "Campaigns", url: "/campaigns", icon: CalendarClock },
 ];
 
+const aiItems = [
+  { title: "AI Assistant", url: "/ai-assistant", icon: Sparkles },
+];
+
 const manageItems = [
   { title: "Menu", url: "/menu", icon: UtensilsCrossed },
   { title: "Customers", url: "/customers", icon: Users },
