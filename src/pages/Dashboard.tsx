@@ -47,8 +47,8 @@ export default function Dashboard() {
                     {s.change}
                   </span>
                 </div>
-                <p className="text-2xl font-bold tracking-tight">{s.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{s.title}</p>
+                <p className="text-3xl font-bold tracking-tight">{s.value}</p>
+                <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wide">{s.title}</p>
               </CardContent>
             </Card>
           </motion.div>
