@@ -107,7 +107,7 @@ export default function Dashboard() {
                 <a
                   key={a.label}
                   href={a.href}
-                  className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/40 hover:bg-primary/10 hover:shadow-sm transition-all duration-200 group"
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 hover:bg-primary/8 hover:shadow-md border border-transparent hover:border-primary/15 transition-all duration-300 group"
                 >
                   <span className="text-xl">{a.icon}</span>
                   <span className="text-sm font-medium group-hover:text-primary transition-colors">{a.label}</span>

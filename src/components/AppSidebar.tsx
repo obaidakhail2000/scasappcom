@@ -106,7 +106,7 @@ export function AppSidebar() {
                 className="rounded-lg transition-all duration-150 hover:bg-sidebar-accent/60"
                 activeClassName="bg-sidebar-primary/15 text-sidebar-primary font-semibold"
               >
-                <Settings className="mr-2 h-4 w-4 shrink-0" />
+                <Settings className="mr-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 {!collapsed && <span>Settings</span>}
               </NavLink>
             </SidebarMenuButton>
