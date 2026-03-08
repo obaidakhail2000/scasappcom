@@ -11,7 +11,7 @@ export function BackToDashboard() {
       className="gap-2 rounded-xl px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all mb-3"
       onClick={() => navigate("/")}
     >
-      <LayoutDashboard className="h-4 w-4" />
+      <LayoutDashboard className="h-4 w-4 text-primary" />
       Dashboard
     </Button>
   );
