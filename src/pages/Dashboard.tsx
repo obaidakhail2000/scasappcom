@@ -57,8 +57,8 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div variants={item}>
-          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <CardHeader className="pb-3">
+          <Card className="border border-border/40 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl">
+            <CardHeader className="pb-4 px-6 pt-6">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-display">Recent Reviews</CardTitle>
                 <a href="/reviews" className="text-xs text-primary font-medium flex items-center gap-0.5 hover:underline">
