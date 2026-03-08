@@ -36,11 +36,11 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {stats.map((s) => (
           <motion.div key={s.title} variants={item}>
-            <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-0 shadow-sm bg-card">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${s.color}`}>
-                    <s.icon className="h-5 w-5" />
+            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-border/40 shadow-md bg-card rounded-2xl">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <div className={`h-11 w-11 rounded-2xl flex items-center justify-center ${s.color}`}>
+                    <s.icon className="h-5 w-5" strokeWidth={1.8} />
                   </div>
                   <span className={`text-xs font-semibold flex items-center gap-0.5 px-2 py-1 rounded-full ${s.up ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
                     {s.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
