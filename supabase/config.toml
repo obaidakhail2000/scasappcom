@@ -1,1 +1,4 @@
 project_id = "chepoywnlaumprjvunwg"
+
+[functions.ai-marketing]
+verify_jwt = false

@@ -9,6 +9,7 @@ import {
   Image,
   CalendarClock,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -32,6 +33,10 @@ const mainItems = [
   { title: "Marketing", url: "/marketing", icon: Megaphone },
   { title: "QR Codes", url: "/qr-codes", icon: QrCode },
   { title: "Campaigns", url: "/campaigns", icon: CalendarClock },
+];
+
+const aiItems = [
+  { title: "AI Assistant", url: "/ai-assistant", icon: Sparkles },
 ];
 
 const manageItems = [
@@ -86,6 +91,13 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(mainItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">AI Tools</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(aiItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 

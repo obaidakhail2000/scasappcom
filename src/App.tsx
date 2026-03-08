@@ -14,6 +14,7 @@ import Menu from "@/pages/Menu";
 import Customers from "@/pages/Customers";
 import Rewards from "@/pages/Rewards";
 import Posters from "@/pages/Posters";
+import AIAssistant from "@/pages/AIAssistant";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/customers" element={<Customers />} />
               <Route path="/rewards" element={<Rewards />} />
               <Route path="/posters" element={<Posters />} />
+              <Route path="/ai-assistant" element={<AIAssistant />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
