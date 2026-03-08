@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -20,21 +20,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    // First restore session from storage
+    // Step 1: Restore session from storage FIRST — this is the source of truth
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      initialized.current = true;
     });
 
-    // Then listen for auth state changes (do NOT await inside callback)
+    // Step 2: Listen for subsequent auth changes (sign in, sign out, token refresh)
+    // IMPORTANT: Do NOT set loading=true here — only update user/session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        // Skip INITIAL_SESSION if getSession hasn't resolved yet to avoid race condition
+        if (event === "INITIAL_SESSION" && !initialized.current) {
+          return;
+        }
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        // Only set loading false if not yet initialized (safety net)
+        if (!initialized.current) {
+          setLoading(false);
+          initialized.current = true;
+        }
       }
     );
 
@@ -43,8 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
   }, []);
 
   return (
