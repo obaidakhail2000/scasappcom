@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ export default function Customers() {
   const filtered = customers.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display">Customers</h1>
@@ -34,29 +34,29 @@ export default function Customers() {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Search customers..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input placeholder="Search customers..." className="pl-10 rounded-xl" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
-      <Card>
+      <Card className="border-0 shadow-md rounded-2xl">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b text-left">
-                  <th className="p-4 text-xs font-medium text-muted-foreground">Customer</th>
-                  <th className="p-4 text-xs font-medium text-muted-foreground">Contact</th>
-                  <th className="p-4 text-xs font-medium text-muted-foreground">Visits</th>
-                  <th className="p-4 text-xs font-medium text-muted-foreground">Rating</th>
-                  <th className="p-4 text-xs font-medium text-muted-foreground">Last Visit</th>
-                  <th className="p-4 text-xs font-medium text-muted-foreground">Tags</th>
+                <tr className="border-b">
+                  <th className="p-4 text-xs font-medium text-muted-foreground text-left">Customer</th>
+                  <th className="p-4 text-xs font-medium text-muted-foreground text-left">Contact</th>
+                  <th className="p-4 text-xs font-medium text-muted-foreground text-left">Visits</th>
+                  <th className="p-4 text-xs font-medium text-muted-foreground text-left">Rating</th>
+                  <th className="p-4 text-xs font-medium text-muted-foreground text-left">Last Visit</th>
+                  <th className="p-4 text-xs font-medium text-muted-foreground text-left">Tags</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((c) => (
-                  <motion.tr key={c.id} variants={item} className="border-b last:border-0 hover:bg-secondary/50 transition-colors">
+                  <motion.tr key={c.id} variants={item} className="border-b last:border-0 hover:bg-muted/40 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center">
                           <span className="text-xs font-semibold text-primary">{c.name.split(" ").map((n) => n[0]).join("")}</span>
                         </div>
                         <span className="font-medium text-sm">{c.name}</span>

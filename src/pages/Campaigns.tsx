@@ -1,9 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Zap, Clock, Send } from "lucide-react";
+import { Plus, Zap, Send } from "lucide-react";
 import { motion } from "framer-motion";
 
 const campaigns = [
@@ -18,7 +16,7 @@ const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
 export default function Campaigns() {
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display">Campaigns</h1>
@@ -30,11 +28,11 @@ export default function Campaigns() {
       <div className="grid gap-4">
         {campaigns.map((c) => (
           <motion.div key={c.id} variants={item}>
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-lg transition-all border-0 shadow-sm rounded-2xl">
               <CardContent className="p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <div className="h-11 w-11 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                       {c.type === "Automated" ? <Zap className="h-5 w-5 text-primary" /> : <Send className="h-5 w-5 text-primary" />}
                     </div>
                     <div>
@@ -46,18 +44,9 @@ export default function Campaigns() {
                     </div>
                   </div>
                   <div className="flex gap-6 text-center">
-                    <div>
-                      <p className="text-lg font-bold">{c.sent}</p>
-                      <p className="text-[10px] text-muted-foreground">Sent</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">{c.opened}</p>
-                      <p className="text-[10px] text-muted-foreground">Opened</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">{c.redeemed}</p>
-                      <p className="text-[10px] text-muted-foreground">Redeemed</p>
-                    </div>
+                    <div><p className="text-lg font-bold">{c.sent}</p><p className="text-[10px] text-muted-foreground">Sent</p></div>
+                    <div><p className="text-lg font-bold">{c.opened}</p><p className="text-[10px] text-muted-foreground">Opened</p></div>
+                    <div><p className="text-lg font-bold">{c.redeemed}</p><p className="text-[10px] text-muted-foreground">Redeemed</p></div>
                   </div>
                 </div>
               </CardContent>

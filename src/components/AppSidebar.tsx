@@ -55,8 +55,8 @@ export function AppSidebar() {
           <NavLink
             to={item.url}
             end
-            className="rounded-xl transition-all duration-200 hover:bg-sidebar-accent/70 hover:translate-x-1 hover:shadow-md"
-            activeClassName="bg-sidebar-primary/15 text-sidebar-primary font-semibold shadow-md border-l-2 border-sidebar-primary"
+            className="rounded-xl transition-all duration-200 hover:bg-sidebar-accent/70 hover:translate-x-0.5"
+            activeClassName="bg-sidebar-primary/15 text-sidebar-primary font-semibold shadow-sm border-l-2 border-sidebar-primary"
           >
             <item.icon className="mr-2 h-4 w-4 shrink-0" />
             {!collapsed && <span>{item.title}</span>}
@@ -69,8 +69,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4 pb-6">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-sidebar-primary flex items-center justify-center shrink-0 shadow-md">
-            <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
+          <div className="h-10 w-10 rounded-2xl bg-sidebar-primary flex items-center justify-center shrink-0 shadow-lg">
+            <span className="text-sidebar-primary-foreground font-bold text-base">S</span>
           </div>
           {!collapsed && (
             <div>
@@ -103,7 +103,7 @@ export function AppSidebar() {
             <SidebarMenuButton asChild isActive={isActive("/settings")}>
               <NavLink
                 to="/settings"
-                className="rounded-lg transition-all duration-150 hover:bg-sidebar-accent/60"
+                className="rounded-xl transition-all duration-150 hover:bg-sidebar-accent/60"
                 activeClassName="bg-sidebar-primary/15 text-sidebar-primary font-semibold"
               >
                 <Settings className="mr-2 h-4 w-4 shrink-0" strokeWidth={1.8} />

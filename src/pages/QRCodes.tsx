@@ -15,21 +15,21 @@ export default function QRCodes() {
   const [qrName, setQrName] = useState("");
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-5xl mx-auto">
       <div>
         <h1 className="text-3xl font-display">QR Codes</h1>
         <p className="text-muted-foreground mt-1">Generate QR codes for collecting customer reviews.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="border-0 shadow-md rounded-2xl">
           <CardHeader>
             <CardTitle className="text-lg font-display">Generate New QR Code</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input placeholder="QR Code name (e.g., Table Tent)" value={qrName} onChange={(e) => setQrName(e.target.value)} />
-            <div className="flex items-center justify-center p-8 rounded-lg bg-secondary">
-              <div className="h-48 w-48 rounded-xl bg-card border-2 border-dashed border-border flex items-center justify-center">
+            <div className="flex items-center justify-center p-8 rounded-2xl bg-muted/50">
+              <div className="h-48 w-48 rounded-2xl bg-card border-2 border-dashed border-border flex items-center justify-center">
                 <QrCode className="h-24 w-24 text-muted-foreground/40" />
               </div>
             </div>
@@ -40,14 +40,14 @@ export default function QRCodes() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-md rounded-2xl">
           <CardHeader>
             <CardTitle className="text-lg font-display">Your QR Codes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {existingQR.map((qr) => (
-              <div key={qr.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary">
-                <div className="h-12 w-12 rounded-lg bg-card flex items-center justify-center shrink-0">
+              <div key={qr.id} className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40">
+                <div className="h-12 w-12 rounded-2xl bg-card flex items-center justify-center shrink-0 shadow-sm">
                   <QrCode className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">

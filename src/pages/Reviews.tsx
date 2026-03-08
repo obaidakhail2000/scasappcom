@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp, Image, Filter } from "lucide-react";
+import { Star, ThumbsUp, Image } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
@@ -22,16 +22,14 @@ export default function Reviews() {
   const filtered = filter === "highlighted" ? reviews.filter((r) => r.highlighted) : reviews;
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display">Reviews</h1>
           <p className="text-muted-foreground mt-1">Manage and highlight your best customer reviews.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>
-            All Reviews
-          </Button>
+          <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>All Reviews</Button>
           <Button variant={filter === "highlighted" ? "default" : "outline"} size="sm" onClick={() => setFilter("highlighted")}>
             <Star className="h-4 w-4 mr-1" /> Highlighted
           </Button>
@@ -41,11 +39,11 @@ export default function Reviews() {
       <div className="grid gap-4">
         {filtered.map((r) => (
           <motion.div key={r.id} variants={item}>
-            <Card className={`transition-shadow hover:shadow-md ${r.highlighted ? 'ring-1 ring-primary/20' : ''}`}>
+            <Card className={`transition-all hover:shadow-lg border-0 shadow-sm rounded-2xl ${r.highlighted ? 'ring-1 ring-primary/20' : ''}`}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex gap-3 flex-1">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <div className="h-11 w-11 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                       <span className="text-sm font-semibold text-primary">{r.name.charAt(0)}</span>
                     </div>
                     <div className="min-w-0">
@@ -67,12 +65,8 @@ export default function Reviews() {
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" title="Highlight">
-                      <ThumbsUp className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" title="Create Poster">
-                      <Image className="h-4 w-4" />
-                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8"><ThumbsUp className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8"><Image className="h-4 w-4" /></Button>
                   </div>
                 </div>
               </CardContent>
