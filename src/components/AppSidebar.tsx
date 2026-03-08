@@ -55,8 +55,8 @@ export function AppSidebar() {
           <NavLink
             to={item.url}
             end
-            className="hover:bg-sidebar-accent/50"
-            activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold"
+            className="rounded-lg transition-all duration-150 hover:bg-sidebar-accent/60 hover:translate-x-0.5"
+            activeClassName="bg-sidebar-primary/15 text-sidebar-primary font-semibold shadow-sm"
           >
             <item.icon className="mr-2 h-4 w-4 shrink-0" />
             {!collapsed && <span>{item.title}</span>}
@@ -67,15 +67,15 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
+      <SidebarHeader className="p-4 pb-6">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-sidebar-primary flex items-center justify-center shrink-0 shadow-md">
             <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
           </div>
           {!collapsed && (
             <div>
               <h2 className="text-sm font-bold text-sidebar-foreground font-display tracking-wide">SCAS</h2>
-              <p className="text-[10px] text-sidebar-foreground/60">Restaurant Marketing</p>
+              <p className="text-[10px] text-sidebar-foreground/50">Restaurant Marketing</p>
             </div>
           )}
         </div>
@@ -83,14 +83,14 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(mainItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Manage</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">Manage</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(manageItems)}</SidebarMenu>
           </SidebarGroupContent>
@@ -101,7 +101,11 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive("/settings")}>
-              <NavLink to="/settings" className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold">
+              <NavLink
+                to="/settings"
+                className="rounded-lg transition-all duration-150 hover:bg-sidebar-accent/60"
+                activeClassName="bg-sidebar-primary/15 text-sidebar-primary font-semibold"
+              >
                 <Settings className="mr-2 h-4 w-4 shrink-0" />
                 {!collapsed && <span>Settings</span>}
               </NavLink>

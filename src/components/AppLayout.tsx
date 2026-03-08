@@ -8,16 +8,16 @@ export function AppLayout() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b px-4 bg-card shrink-0">
+          <header className="h-14 flex items-center border-b border-border/60 px-4 bg-card/80 backdrop-blur-sm shrink-0 sticky top-0 z-10">
             <SidebarTrigger className="mr-4" />
             <div className="flex-1" />
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-xs font-semibold text-primary">JD</span>
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
+                <span className="text-xs font-bold text-primary">JD</span>
               </div>
             </div>
           </header>
-          <main className="flex-1 overflow-auto p-6">
+          <main className="flex-1 overflow-auto p-6 bg-background">
             <Outlet />
           </main>
         </div>
