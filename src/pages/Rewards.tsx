@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Gift, Star, Trophy, Zap } from "lucide-react";
+import { Gift, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 
 const rewards = [
@@ -24,7 +24,7 @@ const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
 export default function Rewards() {
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-6xl mx-auto">
       <div>
         <h1 className="text-3xl font-display">Rewards</h1>
         <p className="text-muted-foreground mt-1">Manage bonuses for customers who leave reviews.</p>
@@ -34,10 +34,10 @@ export default function Rewards() {
         <div className="lg:col-span-2 space-y-4">
           {rewards.map((r) => (
             <motion.div key={r.id} variants={item}>
-              <Card className="hover:shadow-md transition-shadow">
+              <Card className="hover:shadow-lg transition-all border-0 shadow-sm rounded-2xl">
                 <CardContent className="p-5">
                   <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <div className="h-11 w-11 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                       <Gift className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
@@ -58,7 +58,7 @@ export default function Rewards() {
         </div>
 
         <motion.div variants={item}>
-          <Card>
+          <Card className="border-0 shadow-md rounded-2xl">
             <CardHeader>
               <CardTitle className="text-lg font-display flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-primary" /> Top Reviewers
@@ -68,7 +68,7 @@ export default function Rewards() {
               {topReviewers.map((t, i) => (
                 <div key={t.name} className="flex items-center gap-3">
                   <span className="text-sm font-bold text-muted-foreground w-5">{i + 1}</span>
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center">
                     <span className="text-xs font-semibold text-primary">{t.name.charAt(0)}</span>
                   </div>
                   <div className="flex-1">

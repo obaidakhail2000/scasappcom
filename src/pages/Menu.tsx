@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, DollarSign } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const categories = [
@@ -34,7 +34,7 @@ const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
 export default function Menu() {
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display">Menu</h1>
@@ -45,13 +45,13 @@ export default function Menu() {
 
       {categories.map((cat) => (
         <motion.div key={cat.name} variants={item}>
-          <Card>
+          <Card className="border-0 shadow-md rounded-2xl">
             <CardHeader>
               <CardTitle className="text-lg font-display">{cat.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {cat.items.map((menuItem) => (
-                <div key={menuItem.id} className="flex items-center gap-4 p-3 rounded-lg bg-secondary">
+                <div key={menuItem.id} className="flex items-center gap-4 p-4 rounded-2xl bg-muted/40">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{menuItem.name}</span>

@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Download, Printer, Palette } from "lucide-react";
 import { motion } from "framer-motion";
@@ -14,7 +14,7 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function Posters() {
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-6xl mx-auto">
       <div>
         <h1 className="text-3xl font-display">Review Posters</h1>
         <p className="text-muted-foreground mt-1">Convert your best reviews into printable wall posters.</p>
@@ -23,7 +23,7 @@ export default function Posters() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posterReviews.map((r) => (
           <motion.div key={r.id} variants={item}>
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card className="overflow-hidden hover:shadow-xl transition-all border-0 shadow-md rounded-2xl">
               <div className="aspect-[3/4] bg-gradient-to-br from-foreground to-foreground/80 p-8 flex flex-col justify-between text-background">
                 <div className="flex justify-center">
                   {Array.from({ length: r.rating }).map((_, j) => (
