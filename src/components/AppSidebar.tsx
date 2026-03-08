@@ -95,6 +95,13 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">AI Tools</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(aiItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">Manage</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(manageItems)}</SidebarMenu>
