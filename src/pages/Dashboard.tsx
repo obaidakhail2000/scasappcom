@@ -91,11 +91,11 @@ export default function Dashboard() {
         </motion.div>
 
         <motion.div variants={item}>
-          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <CardHeader className="pb-3">
+          <Card className="border border-border/40 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl">
+            <CardHeader className="pb-4 px-6 pt-6">
               <CardTitle className="text-lg font-display">Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
+            <CardContent className="grid grid-cols-2 gap-3 px-6">
               {[
                 { label: "Generate QR Code", href: "/qr-codes", icon: "📱" },
                 { label: "Create Campaign", href: "/campaigns", icon: "📣" },
