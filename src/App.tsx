@@ -1,4 +1,3 @@
-// App root component
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,13 +8,16 @@ import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Reviews from "@/pages/Reviews";
 import Marketing from "@/pages/Marketing";
-import QRCodes from "@/pages/QRCodes";
 import Campaigns from "@/pages/Campaigns";
 import Menu from "@/pages/Menu";
 import Customers from "@/pages/Customers";
 import Rewards from "@/pages/Rewards";
 import Posters from "@/pages/Posters";
 import AIAssistant from "@/pages/AIAssistant";
+import Analytics from "@/pages/Analytics";
+import Tables from "@/pages/Tables";
+import PrivateFeedback from "@/pages/PrivateFeedback";
+import Settings from "@/pages/Settings";
 import CustomerReview from "@/pages/CustomerReview";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
@@ -43,25 +45,29 @@ const App = () => (
         <Toaster />
         <Sonner />
         <Routes>
-          {/* Public routes - accessible by customers */}
+          {/* Public routes */}
           <Route path="/review" element={<CustomerReview />} />
-          
+
           {/* Auth routes */}
           <Route path="/auth" element={<AuthRoute />} />
           <Route path="/login" element={<AuthRoute />} />
-          
-          {/* Protected routes - restaurant owner dashboard */}
+
+          {/* Protected dashboard routes */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/marketing" element={<Marketing />} />
-            <Route path="/qr-codes" element={<QRCodes />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/menu" element={<Menu />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/rewards" element={<Rewards />} />
             <Route path="/posters" element={<Posters />} />
             <Route path="/ai-assistant" element={<AIAssistant />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/tables" element={<Tables />} />
+            <Route path="/private-feedback" element={<PrivateFeedback />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/qr-codes" element={<Tables />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

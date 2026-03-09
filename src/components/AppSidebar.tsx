@@ -1,15 +1,14 @@
 import {
   LayoutDashboard,
   Star,
-  Megaphone,
-  QrCode,
-  UtensilsCrossed,
   Users,
-  Gift,
-  Image,
-  CalendarClock,
+  Megaphone,
+  BarChart3,
+  Table2,
+  MessageSquareWarning,
   Settings,
-  Sparkles,
+  Image,
+  QrCode,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -30,28 +29,22 @@ import {
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Reviews", url: "/reviews", icon: Star },
-  { title: "Marketing", url: "/marketing", icon: Megaphone },
-  { title: "QR Codes", url: "/qr-codes", icon: QrCode },
-  { title: "Campaigns", url: "/campaigns", icon: CalendarClock },
-];
-
-const aiItems = [
-  { title: "AI Assistant", url: "/ai-assistant", icon: Sparkles },
+  { title: "Customers", url: "/customers", icon: Users },
+  { title: "Campaigns", url: "/campaigns", icon: Megaphone },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
 ];
 
 const manageItems = [
-  { title: "Menu", url: "/menu", icon: UtensilsCrossed },
-  { title: "Customers", url: "/customers", icon: Users },
-  { title: "Rewards", url: "/rewards", icon: Gift },
-  { title: "Posters", url: "/posters", icon: Image },
+  { title: "Tables", url: "/tables", icon: Table2 },
+  { title: "Private Feedback", url: "/private-feedback", icon: MessageSquareWarning },
+  { title: "Print Poster", url: "/posters", icon: Image },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const currentPath = location.pathname;
-  const isActive = (path: string) => currentPath === path;
+  const isActive = (path: string) => location.pathname === path;
 
   const renderItems = (items: typeof mainItems) =>
     items.map((item) => (
@@ -79,8 +72,8 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <div>
-              <h2 className="text-sm font-bold text-sidebar-foreground font-display tracking-wide">SCAS</h2>
-              <p className="text-[10px] text-sidebar-foreground/50">Restaurant Marketing</p>
+              <h2 className="text-sm font-bold text-sidebar-foreground tracking-wide">SCAS</h2>
+              <p className="text-[10px] text-sidebar-foreground/50">Reputation Management</p>
             </div>
           )}
         </div>
@@ -91,13 +84,6 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(mainItems)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">AI Tools</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{renderItems(aiItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 

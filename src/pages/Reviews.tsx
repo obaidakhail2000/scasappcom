@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { generateAutoReply } from "@/lib/review-analysis";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -142,6 +143,10 @@ export default function Reviews() {
                           {r.highlighted && <Badge className="text-[10px] bg-primary/10 text-primary border-0">Featured</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">{r.text}</p>
+                        <div className="mt-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                          <p className="text-[10px] text-muted-foreground font-medium">🏪 Restaurant Reply</p>
+                          <p className="text-[11px] text-foreground/70 mt-0.5">{generateAutoReply(r.rating)}</p>
+                        </div>
                         <p className="text-xs text-muted-foreground/60 mt-2">{new Date(r.created_at).toLocaleDateString()}</p>
                       </div>
                     </div>
