@@ -163,8 +163,8 @@ export default function CustomerReview() {
                 className="space-y-5 text-center"
               >
                 <div className="flex justify-center">
-                  <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+                  <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center">
+                    <CheckCircle2 className="h-8 w-8 text-accent-foreground" />
                   </div>
                 </div>
 

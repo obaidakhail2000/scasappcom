@@ -200,7 +200,7 @@ export default function Dashboard() {
             {(bestTable || worstTable) && (
               <div className="flex flex-wrap gap-3 mt-4">
                 {bestTable && (
-                  <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                  <Badge variant="secondary" className="bg-accent/15 text-accent-foreground">
                     ⭐ أفضل طاولة: {bestTable.table} ({bestTable.avg})
                   </Badge>
                 )}
