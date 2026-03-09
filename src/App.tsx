@@ -16,6 +16,7 @@ import Customers from "@/pages/Customers";
 import Rewards from "@/pages/Rewards";
 import Posters from "@/pages/Posters";
 import AIAssistant from "@/pages/AIAssistant";
+import CustomerReview from "@/pages/CustomerReview";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
@@ -42,8 +43,14 @@ const App = () => (
         <Toaster />
         <Sonner />
         <Routes>
+          {/* Public routes - accessible by customers */}
+          <Route path="/review" element={<CustomerReview />} />
+          
+          {/* Auth routes */}
           <Route path="/auth" element={<AuthRoute />} />
           <Route path="/login" element={<AuthRoute />} />
+          
+          {/* Protected routes - restaurant owner dashboard */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/reviews" element={<Reviews />} />
