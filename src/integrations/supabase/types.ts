@@ -188,6 +188,7 @@ export type Database = {
           rating: number
           review_date: string | null
           source: string | null
+          table_number: string | null
           text: string | null
           updated_at: string
           user_id: string
@@ -200,6 +201,7 @@ export type Database = {
           rating: number
           review_date?: string | null
           source?: string | null
+          table_number?: string | null
           text?: string | null
           updated_at?: string
           user_id: string
@@ -212,6 +214,7 @@ export type Database = {
           rating?: number
           review_date?: string | null
           source?: string | null
+          table_number?: string | null
           text?: string | null
           updated_at?: string
           user_id?: string
