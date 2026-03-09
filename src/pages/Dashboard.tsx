@@ -88,7 +88,7 @@ export default function Dashboard() {
     { title: "إجمالي التقييمات", value: String(totalReviews), icon: Star, color: "bg-primary/10 text-primary" },
     { title: "متوسط التقييم", value: avgRating, icon: TrendingUp, color: "bg-accent/15 text-accent-foreground" },
     { title: "تقييمات سلبية", value: String(negativeReviews.length), icon: AlertTriangle, color: "bg-destructive/10 text-destructive" },
-    { title: "العملاء", value: String(customers.length), icon: Users, color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600" },
+    { title: "العملاء", value: String(customers.length), icon: Users, color: "bg-secondary text-secondary-foreground" },
   ];
 
   return (
