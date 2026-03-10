@@ -16,7 +16,7 @@ import {
 } from "@/lib/review-analysis";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
-const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } } };
+const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
 
 function AnimatedCounter({ value, decimals = 0 }: { value: number; decimals?: number }) {
   const [display, setDisplay] = useState(0);
