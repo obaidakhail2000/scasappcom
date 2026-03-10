@@ -8,7 +8,6 @@ import {
   MessageSquareWarning,
   Settings,
   Image,
-  QrCode,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -53,59 +52,59 @@ export function AppSidebar() {
           <NavLink
             to={item.url}
             end
-            className="rounded-xl transition-all duration-200 hover:bg-sidebar-accent/70 hover:translate-x-0.5"
-            activeClassName="bg-sidebar-primary/15 text-sidebar-primary font-semibold shadow-sm border-l-2 border-sidebar-primary"
+            className="rounded-lg transition-all duration-200 hover:bg-sidebar-accent/80 group/nav"
+            activeClassName="bg-sidebar-primary/20 text-sidebar-primary font-semibold shadow-sm"
           >
-            <item.icon className="mr-2 h-4 w-4 shrink-0" />
-            {!collapsed && <span>{item.title}</span>}
+            <item.icon className="mr-2.5 h-[18px] w-[18px] shrink-0 transition-colors group-hover/nav:text-sidebar-primary" />
+            {!collapsed && <span className="text-[13px]">{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
     ));
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4 pb-6">
+    <Sidebar collapsible="icon" className="border-r-0">
+      <SidebarHeader className="p-5 pb-6">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-sidebar-primary flex items-center justify-center shrink-0 shadow-lg">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center shrink-0 shadow-lg shadow-sidebar-primary/20">
             <span className="text-sidebar-primary-foreground font-bold text-base">S</span>
           </div>
           {!collapsed && (
             <div>
-              <h2 className="text-sm font-bold text-sidebar-foreground tracking-wide">SCAS</h2>
-              <p className="text-[10px] text-sidebar-foreground/50">Reputation Management</p>
+              <h2 className="text-sm font-bold text-sidebar-primary-foreground tracking-wide">SCAS</h2>
+              <p className="text-[10px] text-sidebar-foreground/50">Restaurant Management</p>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">Main</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/35 text-[10px] uppercase tracking-[0.15em] font-semibold px-3 mb-1">Main</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{renderItems(mainItems)}</SidebarMenu>
+            <SidebarMenu className="space-y-0.5">{renderItems(mainItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest">Manage</SidebarGroupLabel>
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="text-sidebar-foreground/35 text-[10px] uppercase tracking-[0.15em] font-semibold px-3 mb-1">Manage</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{renderItems(manageItems)}</SidebarMenu>
+            <SidebarMenu className="space-y-0.5">{renderItems(manageItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-2">
+      <SidebarFooter className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive("/settings")}>
               <NavLink
                 to="/settings"
-                className="rounded-xl transition-all duration-150 hover:bg-sidebar-accent/60"
-                activeClassName="bg-sidebar-primary/15 text-sidebar-primary font-semibold"
+                className="rounded-lg transition-all duration-150 hover:bg-sidebar-accent/60"
+                activeClassName="bg-sidebar-primary/20 text-sidebar-primary font-semibold"
               >
-                <Settings className="mr-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
-                {!collapsed && <span>Settings</span>}
+                <Settings className="mr-2.5 h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+                {!collapsed && <span className="text-[13px]">Settings</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
