@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BackToDashboard } from "@/components/BackToDashboard";
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } };
 const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
 export default function Reviews() {
@@ -38,20 +38,11 @@ export default function Reviews() {
   const addMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("reviews").insert({
-        user_id: user!.id,
-        customer_name: form.customer_name,
-        rating: parseInt(form.rating),
-        text: form.text || null,
-        source: form.source,
+        user_id: user!.id, customer_name: form.customer_name, rating: parseInt(form.rating), text: form.text || null, source: form.source,
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      toast({ title: "Review added" });
-      setForm({ customer_name: "", rating: "5", text: "", source: "Direct" });
-      setOpen(false);
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["reviews"] }); toast({ title: "Review added" }); setForm({ customer_name: "", rating: "5", text: "", source: "Direct" }); setOpen(false); },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
@@ -64,14 +55,8 @@ export default function Reviews() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("reviews").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      toast({ title: "Review deleted" });
-    },
+    mutationFn: async (id: string) => { const { error } = await supabase.from("reviews").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["reviews"] }); toast({ title: "Review deleted" }); },
   });
 
   const filtered = filter === "highlighted" ? reviews.filter((r) => r.highlighted) : reviews;
@@ -81,17 +66,19 @@ export default function Reviews() {
       <BackToDashboard />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display">Reviews</h1>
-          <p className="text-muted-foreground mt-1">Manage and highlight your best customer reviews.</p>
+          <h1 className="text-2xl font-bold font-display">Reviews</h1>
+          <p className="text-muted-foreground text-sm mt-1">Manage and highlight your best customer reviews.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>All</Button>
-          <Button variant={filter === "highlighted" ? "default" : "outline"} size="sm" onClick={() => setFilter("highlighted")}>
-            <Star className="h-4 w-4 mr-1" /> Featured
-          </Button>
+          <div className="flex bg-muted/60 rounded-lg p-0.5">
+            <button className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${filter === "all" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`} onClick={() => setFilter("all")}>All</button>
+            <button className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${filter === "highlighted" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`} onClick={() => setFilter("highlighted")}>
+              <Star className="h-3 w-3" /> Featured
+            </button>
+          </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1"><Plus className="h-4 w-4" /> Add</Button>
+              <Button size="sm" className="gap-1 rounded-lg"><Plus className="h-4 w-4" /> Add</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Add Review</DialogTitle></DialogHeader>
@@ -99,18 +86,14 @@ export default function Reviews() {
                 <Input placeholder="Customer name *" value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} required />
                 <Select value={form.rating} onValueChange={(v) => setForm({ ...form, rating: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {[5, 4, 3, 2, 1].map((r) => <SelectItem key={r} value={String(r)}>{r} Star{r > 1 && "s"}</SelectItem>)}
-                  </SelectContent>
+                  <SelectContent>{[5, 4, 3, 2, 1].map((r) => <SelectItem key={r} value={String(r)}>{r} Star{r > 1 && "s"}</SelectItem>)}</SelectContent>
                 </Select>
                 <Textarea placeholder="Review text" value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} />
                 <Select value={form.source} onValueChange={(v) => setForm({ ...form, source: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["Direct", "Google", "Yelp", "Facebook"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
+                  <SelectContent>{["Direct", "Google", "Yelp", "Facebook"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
-                <Button type="submit" className="w-full" disabled={addMutation.isPending}>Add Review</Button>
+                <Button type="submit" className="w-full rounded-lg" disabled={addMutation.isPending}>Add Review</Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -122,28 +105,28 @@ export default function Reviews() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">No reviews yet.</div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {filtered.map((r) => (
             <motion.div key={r.id} variants={item}>
-              <Card className={`transition-all hover:shadow-lg border-0 shadow-sm rounded-2xl ${r.highlighted ? 'ring-1 ring-primary/20' : ''}`}>
+              <Card className={`transition-all hover:shadow-card-hover border border-border/40 shadow-card rounded-xl ${r.highlighted ? 'ring-1 ring-primary/20' : ''}`}>
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex gap-3 flex-1">
-                      <div className="h-11 w-11 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center shrink-0">
                         <span className="text-sm font-semibold text-primary">{r.customer_name.charAt(0)}</span>
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium">{r.customer_name}</span>
+                          <span className="font-medium text-sm">{r.customer_name}</span>
                           <div className="flex">
                             {Array.from({ length: r.rating }).map((_, j) => <Star key={j} className="h-3.5 w-3.5 fill-primary text-primary" />)}
-                            {Array.from({ length: 5 - r.rating }).map((_, j) => <Star key={j} className="h-3.5 w-3.5 text-muted-foreground/30" />)}
+                            {Array.from({ length: 5 - r.rating }).map((_, j) => <Star key={j} className="h-3.5 w-3.5 text-muted-foreground/20" />)}
                           </div>
                           <Badge variant="secondary" className="text-[10px]">{r.source}</Badge>
                           {r.highlighted && <Badge className="text-[10px] bg-primary/10 text-primary border-0">Featured</Badge>}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">{r.text}</p>
-                        <div className="mt-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                        <p className="text-sm text-muted-foreground mt-1.5">{r.text}</p>
+                        <div className="mt-2 p-2.5 rounded-md bg-primary/5 border border-primary/10">
                           <p className="text-[10px] text-muted-foreground font-medium">🏪 Restaurant Reply</p>
                           <p className="text-[11px] text-foreground/70 mt-0.5">{generateAutoReply(r.rating)}</p>
                         </div>
@@ -151,10 +134,10 @@ export default function Reviews() {
                       </div>
                     </div>
                     <div className="flex gap-1 shrink-0">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleHighlight.mutate({ id: r.id, highlighted: !!r.highlighted })}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => toggleHighlight.mutate({ id: r.id, highlighted: !!r.highlighted })}>
                         <ThumbsUp className={`h-4 w-4 ${r.highlighted ? 'text-primary' : ''}`} />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteMutation.mutate(r.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={() => deleteMutation.mutate(r.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

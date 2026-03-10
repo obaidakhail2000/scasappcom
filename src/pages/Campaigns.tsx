@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BackToDashboard } from "@/components/BackToDashboard";
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } };
 const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
 export default function Campaigns() {
@@ -27,45 +27,26 @@ export default function Campaigns() {
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ["campaigns"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("campaigns").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: async () => { const { data, error } = await supabase.from("campaigns").select("*").order("created_at", { ascending: false }); if (error) throw error; return data; },
   });
 
   const upsertMutation = useMutation({
     mutationFn: async () => {
       const payload = { user_id: user!.id, name: form.name, type: form.type, subject: form.subject || null, content: form.content || null, audience: form.audience };
-      if (editingId) {
-        const { error } = await supabase.from("campaigns").update(payload).eq("id", editingId);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("campaigns").insert(payload);
-        if (error) throw error;
-      }
+      if (editingId) { const { error } = await supabase.from("campaigns").update(payload).eq("id", editingId); if (error) throw error; }
+      else { const { error } = await supabase.from("campaigns").insert(payload); if (error) throw error; }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-      toast({ title: editingId ? "Campaign updated" : "Campaign created" });
-      resetForm();
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["campaigns"] }); toast({ title: editingId ? "Campaign updated" : "Campaign created" }); resetForm(); },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("campaigns").delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: async (id: string) => { const { error } = await supabase.from("campaigns").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["campaigns"] }); toast({ title: "Campaign deleted" }); },
   });
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("campaigns").update({ status }).eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: async ({ id, status }: { id: string; status: string }) => { const { error } = await supabase.from("campaigns").update({ status }).eq("id", id); if (error) throw error; },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["campaigns"] }),
   });
 
@@ -77,12 +58,12 @@ export default function Campaigns() {
       <BackToDashboard />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display">Campaigns</h1>
-          <p className="text-muted-foreground mt-1">Create and manage promotion campaigns.</p>
+          <h1 className="text-2xl font-bold font-display">Campaigns</h1>
+          <p className="text-muted-foreground text-sm mt-1">Create and manage promotion campaigns.</p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); setOpen(v); }}>
           <DialogTrigger asChild>
-            <Button className="gap-2"><Plus className="h-4 w-4" /> New Campaign</Button>
+            <Button className="gap-2 rounded-lg"><Plus className="h-4 w-4" /> New Campaign</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editingId ? "Edit Campaign" : "New Campaign"}</DialogTitle></DialogHeader>
@@ -90,19 +71,15 @@ export default function Campaigns() {
               <Input placeholder="Campaign name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["email", "sms", "push"].map((t) => <SelectItem key={t} value={t}>{t.toUpperCase()}</SelectItem>)}
-                </SelectContent>
+                <SelectContent>{["email", "sms", "push"].map((t) => <SelectItem key={t} value={t}>{t.toUpperCase()}</SelectItem>)}</SelectContent>
               </Select>
               <Input placeholder="Subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
               <Textarea placeholder="Content" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
               <Select value={form.audience} onValueChange={(v) => setForm({ ...form, audience: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["all", "vip", "new", "regulars"].map((a) => <SelectItem key={a} value={a}>{a.charAt(0).toUpperCase() + a.slice(1)}</SelectItem>)}
-                </SelectContent>
+                <SelectContent>{["all", "vip", "new", "regulars"].map((a) => <SelectItem key={a} value={a}>{a.charAt(0).toUpperCase() + a.slice(1)}</SelectItem>)}</SelectContent>
               </Select>
-              <Button type="submit" className="w-full" disabled={upsertMutation.isPending}>{editingId ? "Update" : "Create"} Campaign</Button>
+              <Button type="submit" className="w-full rounded-lg" disabled={upsertMutation.isPending}>{editingId ? "Update" : "Create"} Campaign</Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -113,34 +90,30 @@ export default function Campaigns() {
       ) : campaigns.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">No campaigns yet.</div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {campaigns.map((c) => (
             <motion.div key={c.id} variants={item}>
-              <Card className="hover:shadow-lg transition-all border-0 shadow-sm rounded-2xl">
+              <Card className="hover:shadow-card-hover transition-all border border-border/40 shadow-card rounded-xl">
                 <CardContent className="p-5">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="h-11 w-11 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center shrink-0">
                         {c.type === "sms" ? <Zap className="h-5 w-5 text-primary" /> : <Send className="h-5 w-5 text-primary" />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{c.name}</span>
+                          <span className="font-medium text-sm">{c.name}</span>
                           <Badge variant={c.status === "active" ? "default" : "secondary"} className="text-[10px]">{c.status}</Badge>
-                          <Badge variant="outline" className="text-[10px]">{c.type}</Badge>
+                          <Badge variant="outline" className="text-[10px] border-border/40">{c.type}</Badge>
                         </div>
                         {c.subject && <p className="text-xs text-muted-foreground mt-0.5">{c.subject}</p>}
                       </div>
                     </div>
                     <div className="flex gap-2 items-center">
-                      {c.status === "draft" && (
-                        <Button size="sm" onClick={() => updateStatus.mutate({ id: c.id, status: "active" })}>Activate</Button>
-                      )}
-                      {c.status === "active" && (
-                        <Button size="sm" variant="outline" onClick={() => updateStatus.mutate({ id: c.id, status: "completed" })}>Complete</Button>
-                      )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(c)}><Edit className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteMutation.mutate(c.id)}><Trash2 className="h-4 w-4" /></Button>
+                      {c.status === "draft" && <Button size="sm" className="rounded-lg" onClick={() => updateStatus.mutate({ id: c.id, status: "active" })}>Activate</Button>}
+                      {c.status === "active" && <Button size="sm" variant="outline" className="rounded-lg" onClick={() => updateStatus.mutate({ id: c.id, status: "completed" })}>Complete</Button>}
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => startEdit(c)}><Edit className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={() => deleteMutation.mutate(c.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
                 </CardContent>
