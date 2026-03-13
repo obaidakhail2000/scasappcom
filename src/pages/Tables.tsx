@@ -35,7 +35,7 @@ export default function Tables() {
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    localStorage.setItem("scas_qr_codes", JSON.stringify(codes));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
   }, [codes]);
 
   const previewId = tableName.trim().toLowerCase().replace(/\s+/g, "-");
