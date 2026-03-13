@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import QRCode from "qrcode";
 
 const APP_DOMAIN = window.location.origin;
+const STORAGE_KEY = "meta_automation_qr_codes";
 
 function generateReviewLink(tableId: string) {
   return `${APP_DOMAIN}/review?table=${encodeURIComponent(tableId)}`;
