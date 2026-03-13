@@ -28,7 +28,7 @@ const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 export default function Tables() {
   const [tableName, setTableName] = useState("");
   const [codes, setCodes] = useState<QREntry[]>(() => {
-    const saved = localStorage.getItem("scas_qr_codes");
+    const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
   });
   const { toast } = useToast();
