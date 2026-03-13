@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import QRCode from "qrcode";
 
 const APP_DOMAIN = window.location.origin;
+const STORAGE_KEY = "meta_automation_qr_codes";
 
 function generateReviewLink(tableId: string) {
   return `${APP_DOMAIN}/review?table=${encodeURIComponent(tableId)}`;
@@ -27,14 +28,14 @@ const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 export default function Tables() {
   const [tableName, setTableName] = useState("");
   const [codes, setCodes] = useState<QREntry[]>(() => {
-    const saved = localStorage.getItem("scas_qr_codes");
+    const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
   });
   const { toast } = useToast();
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    localStorage.setItem("scas_qr_codes", JSON.stringify(codes));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
   }, [codes]);
 
   const previewId = tableName.trim().toLowerCase().replace(/\s+/g, "-");

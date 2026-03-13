@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, Users, TrendingUp, AlertTriangle, BarChart3, TableProperties, Zap, MessageSquare, ArrowUpRight, Activity } from "lucide-react";
+import { Star, Users, TrendingUp, AlertTriangle, BarChart3, TableProperties, Zap, MessageSquare, ArrowUpRight, Activity, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,10 +69,32 @@ export default function Dashboard() {
   const totalReviews = reviews.length;
   const reputationScore = calculateReputationScore(reviews);
   const repLabel = getReputationLabel(reputationScore);
-  const negativeReviews = reviews.filter((r) => r.rating <= 3);
+  const negativeReviews = reviews.filter((r) => r.rating <= 2);
+  const neutralReviews = reviews.filter((r) => r.rating === 3);
   const positiveReviews = reviews.filter((r) => r.rating >= 4);
   const ratio = totalReviews > 0 ? ((positiveReviews.length / totalReviews) * 100).toFixed(0) : "0";
   const sentCampaigns = campaigns.filter((c) => c.status === "sent").length;
+
+  // Weekly comparison
+  const now = new Date();
+  const thisWeekStart = new Date(now); thisWeekStart.setDate(now.getDate() - 7);
+  const lastWeekStart = new Date(now); lastWeekStart.setDate(now.getDate() - 14);
+  const thisWeekReviews = reviews.filter((r) => new Date(r.created_at) >= thisWeekStart);
+  const lastWeekReviews = reviews.filter((r) => { const d = new Date(r.created_at); return d >= lastWeekStart && d < thisWeekStart; });
+  const thisWeekAvg = thisWeekReviews.length > 0 ? thisWeekReviews.reduce((s, r) => s + r.rating, 0) / thisWeekReviews.length : 0;
+  const lastWeekAvg = lastWeekReviews.length > 0 ? lastWeekReviews.reduce((s, r) => s + r.rating, 0) / lastWeekReviews.length : 0;
+  const weeklyImprovement = lastWeekAvg > 0 ? (((thisWeekAvg - lastWeekAvg) / lastWeekAvg) * 100).toFixed(0) : "0";
+
+  // Daily summary
+  const todayStr = now.toISOString().split("T")[0];
+  const todayReviews = reviews.filter((r) => r.created_at.startsWith(todayStr));
+  const todayAvg = todayReviews.length > 0 ? todayReviews.reduce((s, r) => s + r.rating, 0) / todayReviews.length : 0;
+  const todayPositive = todayReviews.filter((r) => r.rating >= 4).length;
+  const todayNeutral = todayReviews.filter((r) => r.rating === 3).length;
+  const todayNegative = todayReviews.filter((r) => r.rating <= 2).length;
+
+  // Recent negative alerts
+  const recentNegative = reviews.filter((r) => r.rating <= 2).slice(0, 3);
 
   const keywordData = analyzeMultipleReviews(reviews);
   const suggestions = generateImprovementSuggestions(keywordData.negative);
@@ -120,20 +142,56 @@ export default function Dashboard() {
   const worstTable = [...tableStats].sort((a, b) => b.complaints - a.complaints)[0];
 
   const kpiCards = [
-    { title: "Total Reviews", value: totalReviews, icon: Star, gradient: "from-primary/15 to-primary/5", iconColor: "text-primary", change: "+12%", route: "/reviews" },
-    { title: "Active Customers", value: customers.length, icon: Users, gradient: "from-blue-500/15 to-blue-500/5", iconColor: "text-blue-600", change: "+5%", route: "/customers" },
-    { title: "Campaigns Sent", value: sentCampaigns, icon: Zap, gradient: "from-amber-500/15 to-amber-500/5", iconColor: "text-amber-600", change: "+3", route: "/campaigns" },
+    { title: "Total Reviews", value: totalReviews, icon: Star, gradient: "from-primary/15 to-primary/5", iconColor: "text-primary", change: `+${thisWeekReviews.length} this week`, route: "/reviews" },
     { title: "Avg Rating", value: reputationScore, decimals: 1, icon: TrendingUp, gradient: "from-success/15 to-success/5", iconColor: "text-success", change: repLabel.label, route: "/analytics" },
-    { title: "Reputation", value: reputationScore, decimals: 1, icon: Activity, gradient: "from-violet-500/15 to-violet-500/5", iconColor: "text-violet-600", change: `${ratio}% positive`, route: "/analytics" },
-    { title: "Negative Feedback", value: negativeReviews.length, icon: AlertTriangle, gradient: "from-destructive/15 to-destructive/5", iconColor: "text-destructive", change: `${negativeReviews.length} pending`, route: "/private-feedback" },
+    { title: "Weekly Reviews", value: thisWeekReviews.length, icon: Activity, gradient: "from-blue-500/15 to-blue-500/5", iconColor: "text-blue-600", change: `${weeklyImprovement}% vs last week`, route: "/analytics" },
+    { title: "Positive Reviews", value: positiveReviews.length, icon: Users, gradient: "from-success/15 to-success/5", iconColor: "text-success", change: `${ratio}% positive`, route: "/reviews" },
+    { title: "Neutral Reviews", value: neutralReviews.length, icon: MessageSquare, gradient: "from-amber-500/15 to-amber-500/5", iconColor: "text-amber-600", change: `${neutralReviews.length} total`, route: "/reviews" },
+    { title: "Negative Reviews", value: negativeReviews.length, icon: AlertTriangle, gradient: "from-destructive/15 to-destructive/5", iconColor: "text-destructive", change: `${negativeReviews.length} pending`, route: "/private-feedback" },
   ];
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-[1400px] mx-auto">
-      <motion.div variants={item}>
-        <h1 className="text-2xl font-bold font-display">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Overview of your restaurant performance & reputation.</p>
+      {/* Intro Text */}
+      <motion.div variants={item} className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-xl p-5 border border-primary/10">
+        <h1 className="text-2xl font-bold font-display">Welcome to Meta Automation Menu</h1>
+        <p className="text-muted-foreground text-sm mt-1 max-w-3xl">
+          Meta Automation Menu helps restaurants collect customer feedback through QR codes placed on tables. Customers can quickly rate their experience and leave comments. The dashboard provides real-time analytics, sentiment insights, and smart automation tools that help restaurant owners respond to feedback and improve their service.
+        </p>
       </motion.div>
+
+      {/* Reputation Alerts */}
+      {recentNegative.length > 0 && (
+        <motion.div variants={item}>
+          <Card className="border border-destructive/30 bg-destructive/5 shadow-card rounded-xl">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Bell className="h-4 w-4 text-destructive" />
+                <span className="text-sm font-semibold text-destructive">Reputation Alerts</span>
+                <Badge className="bg-destructive/15 text-destructive border-0 text-[10px]">{negativeReviews.length} negative</Badge>
+              </div>
+              <div className="space-y-2">
+                {recentNegative.map((r) => (
+                  <div key={r.id} className="flex items-start gap-3 p-2.5 rounded-lg bg-card border border-destructive/20">
+                    <div className="h-8 w-8 rounded-lg bg-destructive/15 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold">{r.customer_name}</span>
+                        <div className="flex gap-px">{Array.from({ length: r.rating }).map((_, j) => <Star key={j} className="h-3 w-3 fill-destructive text-destructive" />)}</div>
+                        {(r as any).table_number && <Badge variant="outline" className="text-[9px] h-4 border-destructive/30">Table {(r as any).table_number}</Badge>}
+                      </div>
+                      {r.text && <p className="text-xs text-muted-foreground mt-0.5 truncate">{r.text}</p>}
+                      <p className="text-[10px] text-success mt-1 italic">💡 Suggested: "{generateAutoReply(r.rating)}"</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -164,6 +222,69 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Weekly Performance + Daily Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <motion.div variants={item}>
+          <Card className="border border-border/40 shadow-card rounded-xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" /> Weekly Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/30 text-center">
+                  <p className="text-[10px] text-muted-foreground font-medium">Last Week</p>
+                  <p className="text-xl font-bold">{lastWeekAvg.toFixed(1)} <Star className="inline h-4 w-4 fill-primary text-primary" /></p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/30 text-center">
+                  <p className="text-[10px] text-muted-foreground font-medium">This Week</p>
+                  <p className="text-xl font-bold">{thisWeekAvg.toFixed(1)} <Star className="inline h-4 w-4 fill-primary text-primary" /></p>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 text-center">
+                <p className="text-sm font-semibold text-primary">
+                  {parseInt(weeklyImprovement) >= 0 ? "📈" : "📉"} {weeklyImprovement}% {parseInt(weeklyImprovement) >= 0 ? "improvement" : "decline"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={item}>
+          <Card className="border border-border/40 shadow-card rounded-xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary" /> Daily Reputation Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-lg bg-muted/40 border border-border/30">
+                  <p className="text-[10px] text-muted-foreground font-medium">New Reviews Today</p>
+                  <p className="text-lg font-bold">{todayReviews.length}</p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-muted/40 border border-border/30">
+                  <p className="text-[10px] text-muted-foreground font-medium">Avg Rating Today</p>
+                  <p className="text-lg font-bold">{todayAvg.toFixed(1)} ⭐</p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-success/10 border border-success/20">
+                  <p className="text-[10px] text-success font-medium">Positive</p>
+                  <p className="text-lg font-bold text-success">{todayPositive}</p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <p className="text-[10px] text-destructive font-medium">Negative</p>
+                  <p className="text-lg font-bold text-destructive">{todayNegative}</p>
+                </div>
+              </div>
+              {todayNeutral > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-2 text-center">+ {todayNeutral} neutral review{todayNeutral > 1 ? "s" : ""}</p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
       {/* Reputation Score + Chart Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <motion.div variants={item}>
@@ -183,7 +304,7 @@ export default function Dashboard() {
               </div>
               <Badge variant="secondary" className={`${repLabel.color} font-semibold text-xs px-3`}>{repLabel.label}</Badge>
               <p className="text-xs text-muted-foreground text-center">
-                {positiveReviews.length} positive · {negativeReviews.length} negative
+                {positiveReviews.length} positive · {neutralReviews.length} neutral · {negativeReviews.length} negative
               </p>
             </CardContent>
           </Card>
@@ -382,19 +503,20 @@ export default function Dashboard() {
             {reviews.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">No reviews yet.</p>
             ) : reviews.slice(0, 8).map((r) => (
-              <div key={r.id} className="flex gap-3 p-3 rounded-lg bg-muted/30 border border-border/20 hover:bg-muted/50 transition-colors">
-                <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center shrink-0">
-                  <span className="text-xs font-bold text-primary">{r.customer_name.charAt(0)}</span>
+              <div key={r.id} className={`flex gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${r.rating <= 2 ? "bg-destructive/5 border-destructive/20" : "bg-muted/30 border-border/20"}`}>
+                <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${r.rating <= 2 ? "bg-destructive/15" : "bg-gradient-to-br from-primary/15 to-primary/5"}`}>
+                  <span className={`text-xs font-bold ${r.rating <= 2 ? "text-destructive" : "text-primary"}`}>{r.customer_name.charAt(0)}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium">{r.customer_name}</span>
                     <div className="flex gap-px">
                       {Array.from({ length: 5 }).map((_, j) => (
-                        <Star key={j} className={`h-3 w-3 ${j < r.rating ? "fill-primary text-primary" : "text-muted-foreground/20"}`} />
+                        <Star key={j} className={`h-3 w-3 ${j < r.rating ? (r.rating <= 2 ? "fill-destructive text-destructive" : "fill-primary text-primary") : "text-muted-foreground/20"}`} />
                       ))}
                     </div>
                     {(r as any).table_number && <Badge variant="outline" className="text-[9px] h-4 border-border/40">Table {(r as any).table_number}</Badge>}
+                    {r.rating <= 2 && <Badge className="text-[9px] bg-destructive/15 text-destructive border-0">⚠️ Alert</Badge>}
                     <span className="text-[10px] text-muted-foreground ml-auto">{new Date(r.created_at).toLocaleDateString()}</span>
                   </div>
                   {r.text && <p className="text-xs text-muted-foreground mt-0.5 truncate">{r.text}</p>}
