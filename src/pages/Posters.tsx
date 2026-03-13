@@ -46,7 +46,6 @@ export default function Posters() {
         </Button>
       </div>
 
-      {/* Printable poster */}
       <div className="print-poster">
         <Card className="border border-border/50 shadow-sm rounded-2xl overflow-hidden print:shadow-none print:border-0">
           <CardContent className="p-0">
@@ -82,7 +81,7 @@ export default function Posters() {
             )}
 
             <div className="bg-muted/50 p-4 text-center">
-              <p className="text-xs text-muted-foreground">Your opinion matters to us • Thank you for dining with us</p>
+              <p className="text-xs text-muted-foreground">Powered by Meta Automation Menu • Your opinion matters</p>
             </div>
           </CardContent>
         </Card>

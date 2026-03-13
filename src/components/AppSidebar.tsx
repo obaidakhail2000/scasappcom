@@ -8,6 +8,7 @@ import {
   MessageSquareWarning,
   Settings,
   Image,
+  Utensils,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -34,7 +35,7 @@ const mainItems = [
 ];
 
 const manageItems = [
-  { title: "Tables", url: "/tables", icon: Table2 },
+  { title: "Tables & QR", url: "/tables", icon: Table2 },
   { title: "Private Feedback", url: "/private-feedback", icon: MessageSquareWarning },
   { title: "Print Poster", url: "/posters", icon: Image },
 ];
@@ -67,12 +68,12 @@ export function AppSidebar() {
       <SidebarHeader className="p-5 pb-6">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center shrink-0 shadow-lg shadow-sidebar-primary/20">
-            <span className="text-sidebar-primary-foreground font-bold text-base">S</span>
+            <Utensils className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
             <div>
-              <h2 className="text-sm font-bold text-sidebar-primary-foreground tracking-wide">SCAS</h2>
-              <p className="text-[10px] text-sidebar-foreground/50">Restaurant Management</p>
+              <h2 className="text-sm font-bold text-sidebar-primary-foreground tracking-wide leading-tight">Meta Automation</h2>
+              <p className="text-[10px] text-sidebar-foreground/50">Menu Platform</p>
             </div>
           )}
         </div>

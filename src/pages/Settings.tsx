@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-const STORAGE_KEY = "scas_google_review_url";
+const STORAGE_KEY = "meta_automation_google_review_url";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -23,7 +23,7 @@ export default function Settings() {
         <h1 className="text-2xl font-bold font-display flex items-center gap-2">
           <SettingsIcon className="h-6 w-6 text-primary" /> Settings
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">Configure your restaurant review system.</p>
+        <p className="text-muted-foreground text-sm mt-1">Configure your Meta Automation Menu system.</p>
       </div>
 
       <Card className="border border-border/40 shadow-card rounded-xl">

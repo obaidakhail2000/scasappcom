@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, ChefHat } from "lucide-react";
+import { Mail, Lock, User, Utensils } from "lucide-react";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -53,7 +53,6 @@ export default function Auth() {
     if (result?.error) {
       toast({ title: "Error", description: result.error.message, variant: "destructive" });
     } else if (!result?.redirected) {
-      // Session was set successfully without redirect, navigate to dashboard
       navigate("/", { replace: true });
     }
   };
@@ -71,10 +70,10 @@ export default function Auth() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
-            <ChefHat className="h-8 w-8 text-primary-foreground" />
+            <Utensils className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-display">SCAS</h1>
-          <p className="text-muted-foreground text-sm mt-1">Restaurant Automation Platform</p>
+          <h1 className="text-3xl font-display font-bold">Meta Automation Menu</h1>
+          <p className="text-muted-foreground text-sm mt-1">Restaurant Review & Reputation Platform</p>
         </div>
 
         <Card className="border-0 shadow-xl rounded-2xl">

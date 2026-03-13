@@ -5,12 +5,32 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { LogOut, Bell, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
 export function AppLayout() {
   const { user, signOut } = useAuth();
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
     : user?.email?.charAt(0).toUpperCase() ?? "U";
+
+  // Count recent negative reviews for alert badge
+  const { data: negativeCount = 0 } = useQuery({
+    queryKey: ["negative-alert-count"],
+    queryFn: async () => {
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      const { count, error } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .lte("rating", 2)
+        .gte("created_at", oneDayAgo.toISOString());
+      if (error) return 0;
+      return count || 0;
+    },
+    refetchInterval: 30000,
+  });
 
   return (
     <SidebarProvider>
@@ -31,7 +51,13 @@ export function AppLayout() {
             <div className="flex items-center gap-1.5">
               <Button variant="ghost" size="icon" className="h-8 w-8 relative rounded-lg">
                 <Bell className="h-4 w-4 text-muted-foreground" />
-                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                {negativeCount > 0 ? (
+                  <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[9px] bg-destructive text-destructive-foreground border-0 rounded-full flex items-center justify-center">
+                    {negativeCount}
+                  </Badge>
+                ) : (
+                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                )}
               </Button>
 
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-sm">
