@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { AppLayout } from "@/components/AppLayout";
+import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Reviews from "@/pages/Reviews";
 import Marketing from "@/pages/Marketing";
@@ -34,8 +35,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AuthRoute() {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" /></div>;
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/dashboard" replace />;
   return <Auth />;
+}
+
+function LandingRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" /></div>;
+  if (user) return <Navigate to="/dashboard" replace />;
+  return <Landing />;
 }
 
 const App = () => (
@@ -46,6 +54,7 @@ const App = () => (
         <Sonner />
         <Routes>
           {/* Public routes */}
+          <Route path="/" element={<LandingRoute />} />
           <Route path="/review" element={<CustomerReview />} />
 
           {/* Auth routes */}
@@ -54,7 +63,7 @@ const App = () => (
 
           {/* Protected dashboard routes */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/marketing" element={<Marketing />} />
             <Route path="/campaigns" element={<Campaigns />} />

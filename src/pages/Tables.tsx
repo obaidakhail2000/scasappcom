@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import QRCode from "qrcode";
 
 const APP_DOMAIN = window.location.origin;
-const STORAGE_KEY = "meta_automation_qr_codes";
+const STORAGE_KEY = "google_review_booster_qr_codes";
 
 function generateReviewLink(tableId: string) {
   return `${APP_DOMAIN}/review?table=${encodeURIComponent(tableId)}`;
@@ -95,7 +95,6 @@ export default function Tables() {
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Create */}
         <motion.div variants={item}>
           <Card className="border border-border/50 shadow-sm rounded-2xl">
             <CardHeader className="pb-3">
@@ -134,7 +133,6 @@ export default function Tables() {
           </Card>
         </motion.div>
 
-        {/* List */}
         <motion.div variants={item}>
           <Card className="border border-border/50 shadow-sm rounded-2xl">
             <CardHeader className="pb-3">

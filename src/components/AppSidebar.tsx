@@ -8,7 +8,6 @@ import {
   MessageSquareWarning,
   Settings,
   Image,
-  Utensils,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -27,7 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Reviews", url: "/reviews", icon: Star },
   { title: "Customers", url: "/customers", icon: Users },
   { title: "Campaigns", url: "/campaigns", icon: Megaphone },
@@ -68,12 +67,12 @@ export function AppSidebar() {
       <SidebarHeader className="p-5 pb-6">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center shrink-0 shadow-lg shadow-sidebar-primary/20">
-            <Utensils className="h-5 w-5 text-sidebar-primary-foreground" />
+            <Star className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
             <div>
-              <h2 className="text-sm font-bold text-sidebar-primary-foreground tracking-wide leading-tight">Meta Automation</h2>
-              <p className="text-[10px] text-sidebar-foreground/50">Menu Platform</p>
+              <h2 className="text-sm font-bold text-sidebar-primary-foreground tracking-wide leading-tight">Review Booster</h2>
+              <p className="text-[10px] text-sidebar-foreground/50">for Restaurants</p>
             </div>
           )}
         </div>

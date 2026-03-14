@@ -81,7 +81,7 @@ export default function Posters() {
             )}
 
             <div className="bg-muted/50 p-4 text-center">
-              <p className="text-xs text-muted-foreground">Powered by Meta Automation Menu • Your opinion matters</p>
+              <p className="text-xs text-muted-foreground">Powered by Google Review Booster for Restaurants</p>
             </div>
           </CardContent>
         </Card>
