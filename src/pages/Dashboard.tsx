@@ -73,9 +73,7 @@ export default function Dashboard() {
   const neutralReviews = reviews.filter((r) => r.rating === 3);
   const positiveReviews = reviews.filter((r) => r.rating >= 4);
   const ratio = totalReviews > 0 ? ((positiveReviews.length / totalReviews) * 100).toFixed(0) : "0";
-  const sentCampaigns = campaigns.filter((c) => c.status === "sent").length;
 
-  // Weekly comparison
   const now = new Date();
   const thisWeekStart = new Date(now); thisWeekStart.setDate(now.getDate() - 7);
   const lastWeekStart = new Date(now); lastWeekStart.setDate(now.getDate() - 14);
@@ -85,7 +83,6 @@ export default function Dashboard() {
   const lastWeekAvg = lastWeekReviews.length > 0 ? lastWeekReviews.reduce((s, r) => s + r.rating, 0) / lastWeekReviews.length : 0;
   const weeklyImprovement = lastWeekAvg > 0 ? (((thisWeekAvg - lastWeekAvg) / lastWeekAvg) * 100).toFixed(0) : "0";
 
-  // Daily summary
   const todayStr = now.toISOString().split("T")[0];
   const todayReviews = reviews.filter((r) => r.created_at.startsWith(todayStr));
   const todayAvg = todayReviews.length > 0 ? todayReviews.reduce((s, r) => s + r.rating, 0) / todayReviews.length : 0;
@@ -93,7 +90,6 @@ export default function Dashboard() {
   const todayNeutral = todayReviews.filter((r) => r.rating === 3).length;
   const todayNegative = todayReviews.filter((r) => r.rating <= 2).length;
 
-  // Recent negative alerts
   const recentNegative = reviews.filter((r) => r.rating <= 2).slice(0, 3);
 
   const keywordData = analyzeMultipleReviews(reviews);
@@ -154,9 +150,10 @@ export default function Dashboard() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-[1400px] mx-auto">
       {/* Intro Text */}
       <motion.div variants={item} className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-xl p-5 border border-primary/10">
-        <h1 className="text-2xl font-bold font-display">Welcome to Meta Automation Menu</h1>
+        <h1 className="text-2xl font-bold font-display">Google Review Booster for Restaurants</h1>
+        <p className="text-xs font-medium text-primary/70 mb-1">Smart Restaurant Menu & Review Automation System</p>
         <p className="text-muted-foreground text-sm mt-1 max-w-3xl">
-          Meta Automation Menu helps restaurants collect customer feedback through QR codes placed on tables. Customers can quickly rate their experience and leave comments. The dashboard provides real-time analytics, sentiment insights, and smart automation tools that help restaurant owners respond to feedback and improve their service.
+          Google Review Booster helps restaurants collect customer feedback through QR codes placed on tables. Customers can quickly rate their experience and leave comments. The dashboard provides real-time analytics, sentiment insights, and smart automation tools that help restaurant owners respond to feedback and improve their service.
         </p>
       </motion.div>
 
