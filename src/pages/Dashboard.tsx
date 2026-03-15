@@ -6,13 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 import {
   calculateReputationScore,
   getReputationLabel,
   analyzeMultipleReviews,
   generateImprovementSuggestions,
   generateAutoReply,
+  generateSmartReply,
 } from "@/lib/review-analysis";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
@@ -35,32 +36,16 @@ function AnimatedCounter({ value, decimals = 0 }: { value: number; decimals?: nu
   return <>{decimals > 0 ? display.toFixed(decimals) : Math.round(display)}</>;
 }
 
+const PIE_COLORS = ["hsl(var(--destructive))", "hsl(var(--destructive))", "hsl(var(--warning))", "hsl(var(--primary))", "hsl(var(--success))"];
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [chartFilter, setChartFilter] = useState<"7d" | "30d" | "12m">("7d");
+  const [chartFilter, setChartFilter] = useState<"7d" | "30d" | "12m">("30d");
 
   const { data: reviews = [] } = useQuery({
     queryKey: ["dashboard-reviews"],
     queryFn: async () => {
       const { data, error } = await supabase.from("reviews").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const { data: customers = [] } = useQuery({
-    queryKey: ["dashboard-customers"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("customers").select("id");
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const { data: campaigns = [] } = useQuery({
-    queryKey: ["dashboard-campaigns"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("campaigns").select("id, status");
       if (error) throw error;
       return data;
     },
@@ -81,7 +66,11 @@ export default function Dashboard() {
   const lastWeekReviews = reviews.filter((r) => { const d = new Date(r.created_at); return d >= lastWeekStart && d < thisWeekStart; });
   const thisWeekAvg = thisWeekReviews.length > 0 ? thisWeekReviews.reduce((s, r) => s + r.rating, 0) / thisWeekReviews.length : 0;
   const lastWeekAvg = lastWeekReviews.length > 0 ? lastWeekReviews.reduce((s, r) => s + r.rating, 0) / lastWeekReviews.length : 0;
+  const weeklyChange = thisWeekAvg - lastWeekAvg;
   const weeklyImprovement = lastWeekAvg > 0 ? (((thisWeekAvg - lastWeekAvg) / lastWeekAvg) * 100).toFixed(0) : "0";
+
+  const thisWeekPositive = thisWeekReviews.filter((r) => r.rating >= 4).length;
+  const thisWeekNegative = thisWeekReviews.filter((r) => r.rating <= 2).length;
 
   const todayStr = now.toISOString().split("T")[0];
   const todayReviews = reviews.filter((r) => r.created_at.startsWith(todayStr));
@@ -96,46 +85,46 @@ export default function Dashboard() {
   const suggestions = generateImprovementSuggestions(keywordData.negative);
 
   const distribution = [5, 4, 3, 2, 1].map((star) => ({
-    star,
+    star: `${star}★`,
     count: reviews.filter((r) => r.rating === star).length,
+    starNum: star,
   }));
   const maxCount = Math.max(...distribution.map((d) => d.count), 1);
+
+  const sentimentData = [
+    { name: "Positive", value: positiveReviews.length },
+    { name: "Neutral", value: neutralReviews.length },
+    { name: "Negative", value: negativeReviews.length },
+  ];
+  const sentimentColors = ["hsl(var(--success))", "hsl(var(--warning))", "hsl(var(--destructive))"];
 
   const chartData = (() => {
     if (chartFilter === "7d") {
       return Array.from({ length: 7 }, (_, i) => {
         const d = new Date(); d.setDate(d.getDate() - (6 - i));
         const key = d.toISOString().split("T")[0];
-        return { label: d.toLocaleDateString("en", { weekday: "short" }), count: reviews.filter((r) => r.created_at.startsWith(key)).length };
+        const dayReviews = reviews.filter((r) => r.created_at.startsWith(key));
+        const avg = dayReviews.length > 0 ? dayReviews.reduce((s, r) => s + r.rating, 0) / dayReviews.length : 0;
+        return { label: d.toLocaleDateString("en", { weekday: "short" }), count: dayReviews.length, avg: parseFloat(avg.toFixed(1)) };
       });
     }
     if (chartFilter === "30d") {
       return Array.from({ length: 30 }, (_, i) => {
         const d = new Date(); d.setDate(d.getDate() - (29 - i));
         const key = d.toISOString().split("T")[0];
-        return { label: d.getDate().toString(), count: reviews.filter((r) => r.created_at.startsWith(key)).length };
+        const dayReviews = reviews.filter((r) => r.created_at.startsWith(key));
+        const avg = dayReviews.length > 0 ? dayReviews.reduce((s, r) => s + r.rating, 0) / dayReviews.length : 0;
+        return { label: d.getDate().toString(), count: dayReviews.length, avg: parseFloat(avg.toFixed(1)) };
       });
     }
     return Array.from({ length: 12 }, (_, i) => {
       const d = new Date(); d.setMonth(d.getMonth() - (11 - i));
       const m = d.getMonth(), y = d.getFullYear();
-      return { label: d.toLocaleDateString("en", { month: "short" }), count: reviews.filter((r) => { const rd = new Date(r.created_at); return rd.getMonth() === m && rd.getFullYear() === y; }).length };
+      const monthReviews = reviews.filter((r) => { const rd = new Date(r.created_at); return rd.getMonth() === m && rd.getFullYear() === y; });
+      const avg = monthReviews.length > 0 ? monthReviews.reduce((s, r) => s + r.rating, 0) / monthReviews.length : 0;
+      return { label: d.toLocaleDateString("en", { month: "short" }), count: monthReviews.length, avg: parseFloat(avg.toFixed(1)) };
     });
   })();
-
-  const tableMap = new Map<string, { total: number; sum: number; complaints: number }>();
-  reviews.forEach((r) => {
-    const t = (r as any).table_number || "N/A";
-    const entry = tableMap.get(t) || { total: 0, sum: 0, complaints: 0 };
-    entry.total++; entry.sum += r.rating;
-    if (r.rating <= 3) entry.complaints++;
-    tableMap.set(t, entry);
-  });
-  const tableStats = Array.from(tableMap.entries())
-    .map(([table, s]) => ({ table, avg: (s.sum / s.total).toFixed(1), total: s.total, complaints: s.complaints }))
-    .sort((a, b) => parseFloat(b.avg) - parseFloat(a.avg));
-  const bestTable = tableStats[0];
-  const worstTable = [...tableStats].sort((a, b) => b.complaints - a.complaints)[0];
 
   const kpiCards = [
     { title: "Total Reviews", value: totalReviews, icon: Star, gradient: "from-primary/15 to-primary/5", iconColor: "text-primary", change: `+${thisWeekReviews.length} this week`, route: "/reviews" },
@@ -147,40 +136,40 @@ export default function Dashboard() {
   ];
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-[1400px] mx-auto">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 max-w-[1400px] mx-auto">
       {/* Intro Text */}
-      <motion.div variants={item} className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-xl p-5 border border-primary/10">
-        <h1 className="text-2xl font-bold font-display">Google Review Booster for Restaurants</h1>
-        <p className="text-xs font-medium text-primary/70 mb-1">Smart Restaurant Menu & Review Automation System</p>
-        <p className="text-muted-foreground text-sm mt-1 max-w-3xl">
-          Google Review Booster helps restaurants collect customer feedback through QR codes placed on tables. Customers can quickly rate their experience and leave comments. The dashboard provides real-time analytics, sentiment insights, and smart automation tools that help restaurant owners respond to feedback and improve their service.
+      <motion.div variants={item} className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-6 border border-primary/10">
+        <h1 className="text-3xl font-bold font-display">Meta Automation Menu</h1>
+        <p className="text-sm font-medium text-primary/70 mb-1">Smart Restaurant Menu & Review Automation System</p>
+        <p className="text-muted-foreground text-sm mt-2 max-w-3xl leading-relaxed">
+          Meta Automation Menu helps restaurants collect customer feedback through QR codes placed on tables. Customers can quickly rate their experience and leave comments. The dashboard provides real-time analytics, sentiment insights, and smart automation tools that help restaurant owners respond to feedback and improve their service.
         </p>
       </motion.div>
 
       {/* Reputation Alerts */}
       {recentNegative.length > 0 && (
         <motion.div variants={item}>
-          <Card className="border border-destructive/30 bg-destructive/5 shadow-card rounded-xl">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Bell className="h-4 w-4 text-destructive" />
-                <span className="text-sm font-semibold text-destructive">Reputation Alerts</span>
-                <Badge className="bg-destructive/15 text-destructive border-0 text-[10px]">{negativeReviews.length} negative</Badge>
+          <Card className="border border-destructive/30 bg-destructive/5 shadow-card rounded-2xl">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Bell className="h-5 w-5 text-destructive" />
+                <span className="text-base font-semibold text-destructive">Reputation Alerts</span>
+                <Badge className="bg-destructive/15 text-destructive border-0 text-xs">{negativeReviews.length} negative</Badge>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {recentNegative.map((r) => (
-                  <div key={r.id} className="flex items-start gap-3 p-2.5 rounded-lg bg-card border border-destructive/20">
-                    <div className="h-8 w-8 rounded-lg bg-destructive/15 flex items-center justify-center shrink-0">
-                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <div key={r.id} className="flex items-start gap-3 p-3 rounded-xl bg-card border border-destructive/20">
+                    <div className="h-10 w-10 rounded-xl bg-destructive/15 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold">{r.customer_name}</span>
-                        <div className="flex gap-px">{Array.from({ length: r.rating }).map((_, j) => <Star key={j} className="h-3 w-3 fill-destructive text-destructive" />)}</div>
-                        {(r as any).table_number && <Badge variant="outline" className="text-[9px] h-4 border-destructive/30">Table {(r as any).table_number}</Badge>}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-semibold">{r.customer_name}</span>
+                        <div className="flex gap-px">{Array.from({ length: r.rating }).map((_, j) => <Star key={j} className="h-3.5 w-3.5 fill-destructive text-destructive" />)}</div>
+                        {r.table_number && <Badge variant="outline" className="text-xs h-5 border-destructive/30">Table {r.table_number}</Badge>}
                       </div>
-                      {r.text && <p className="text-xs text-muted-foreground mt-0.5 truncate">{r.text}</p>}
-                      <p className="text-[10px] text-success mt-1 italic">💡 Suggested: "{generateAutoReply(r.rating)}"</p>
+                      {r.text && <p className="text-sm text-muted-foreground mt-1">{r.text}</p>}
+                      <p className="text-xs text-success mt-2 italic">💡 Suggested: "{generateSmartReply(r.rating, r.text || "")}"</p>
                     </div>
                   </div>
                 ))}
@@ -191,27 +180,27 @@ export default function Dashboard() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
         {kpiCards.map((kpi) => (
           <motion.div key={kpi.title} variants={item}>
             <Card
-              className="border border-border/40 shadow-card rounded-xl cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300 group overflow-hidden"
+              className="border border-border/40 shadow-card rounded-2xl cursor-pointer hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group overflow-hidden"
               onClick={() => navigate(kpi.route)}
             >
-              <CardContent className="p-4 relative">
+              <CardContent className="p-5 relative">
                 <div className={`absolute inset-0 bg-gradient-to-br ${kpi.gradient} opacity-60`} />
                 <div className="relative">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center bg-card shadow-sm ${kpi.iconColor} transition-transform group-hover:scale-110`}>
-                      <kpi.icon className="h-4 w-4" />
+                    <div className={`h-11 w-11 rounded-xl flex items-center justify-center bg-card shadow-sm ${kpi.iconColor} transition-transform group-hover:scale-110`}>
+                      <kpi.icon className="h-5 w-5" />
                     </div>
-                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-primary transition-colors" />
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                   </div>
-                  <p className="text-2xl font-bold tracking-tight">
+                  <p className="text-3xl font-bold tracking-tight">
                     <AnimatedCounter value={kpi.value} decimals={kpi.decimals || 0} />
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">{kpi.title}</p>
-                  <p className="text-[10px] text-success mt-1 font-semibold">{kpi.change}</p>
+                  <p className="text-sm text-muted-foreground mt-1 font-medium">{kpi.title}</p>
+                  <p className="text-xs text-success mt-1 font-semibold">{kpi.change}</p>
                 </div>
               </CardContent>
             </Card>
@@ -220,87 +209,119 @@ export default function Dashboard() {
       </div>
 
       {/* Weekly Performance + Daily Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" /> Weekly Performance
+          <Card className="border border-border/40 shadow-card rounded-2xl h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" /> Weekly Performance
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/30 text-center">
-                  <p className="text-[10px] text-muted-foreground font-medium">Last Week</p>
-                  <p className="text-xl font-bold">{lastWeekAvg.toFixed(1)} <Star className="inline h-4 w-4 fill-primary text-primary" /></p>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground font-medium mb-1">Last Week</p>
+                  <p className="text-2xl font-bold">{lastWeekAvg.toFixed(1)} <Star className="inline h-5 w-5 fill-primary text-primary" /></p>
+                  <p className="text-xs text-muted-foreground mt-1">{lastWeekReviews.length} reviews</p>
                 </div>
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/30 text-center">
-                  <p className="text-[10px] text-muted-foreground font-medium">This Week</p>
-                  <p className="text-xl font-bold">{thisWeekAvg.toFixed(1)} <Star className="inline h-4 w-4 fill-primary text-primary" /></p>
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground font-medium mb-1">This Week</p>
+                  <p className="text-2xl font-bold">{thisWeekAvg.toFixed(1)} <Star className="inline h-5 w-5 fill-primary text-primary" /></p>
+                  <p className="text-xs text-muted-foreground mt-1">{thisWeekReviews.length} reviews</p>
                 </div>
               </div>
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 text-center">
-                <p className="text-sm font-semibold text-primary">
-                  {parseInt(weeklyImprovement) >= 0 ? "📈" : "📉"} {weeklyImprovement}% {parseInt(weeklyImprovement) >= 0 ? "improvement" : "decline"}
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 text-center">
+                <p className="text-lg font-bold text-primary">
+                  {weeklyChange >= 0 ? "📈" : "📉"} Rating {weeklyChange >= 0 ? "improved" : "dropped"} by {weeklyChange >= 0 ? "+" : ""}{weeklyChange.toFixed(1)}
                 </p>
+                <p className="text-sm text-muted-foreground mt-1">{weeklyImprovement}% {parseInt(weeklyImprovement) >= 0 ? "improvement" : "decline"} vs last week</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-success/10 border border-success/20 text-center">
+                  <p className="text-xs text-success font-medium">Positive This Week</p>
+                  <p className="text-xl font-bold text-success">{thisWeekPositive}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-center">
+                  <p className="text-xs text-destructive font-medium">Negative This Week</p>
+                  <p className="text-xl font-bold text-destructive">{thisWeekNegative}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
         <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Activity className="h-4 w-4 text-primary" /> Daily Reputation Summary
+          <Card className="border border-border/40 shadow-card rounded-2xl h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary" /> Daily Reputation Summary
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2.5 rounded-lg bg-muted/40 border border-border/30">
-                  <p className="text-[10px] text-muted-foreground font-medium">New Reviews Today</p>
-                  <p className="text-lg font-bold">{todayReviews.length}</p>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/30">
+                  <p className="text-xs text-muted-foreground font-medium">New Reviews Today</p>
+                  <p className="text-2xl font-bold mt-1">{todayReviews.length}</p>
                 </div>
-                <div className="p-2.5 rounded-lg bg-muted/40 border border-border/30">
-                  <p className="text-[10px] text-muted-foreground font-medium">Avg Rating Today</p>
-                  <p className="text-lg font-bold">{todayAvg.toFixed(1)} ⭐</p>
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/30">
+                  <p className="text-xs text-muted-foreground font-medium">Avg Rating Today</p>
+                  <p className="text-2xl font-bold mt-1">{todayAvg.toFixed(1)} ⭐</p>
                 </div>
-                <div className="p-2.5 rounded-lg bg-success/10 border border-success/20">
-                  <p className="text-[10px] text-success font-medium">Positive</p>
-                  <p className="text-lg font-bold text-success">{todayPositive}</p>
+                <div className="p-4 rounded-xl bg-success/10 border border-success/20">
+                  <p className="text-xs text-success font-medium">Positive</p>
+                  <p className="text-2xl font-bold text-success mt-1">{todayPositive}</p>
                 </div>
-                <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
-                  <p className="text-[10px] text-destructive font-medium">Negative</p>
-                  <p className="text-lg font-bold text-destructive">{todayNegative}</p>
+                <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+                  <p className="text-xs text-destructive font-medium">Negative</p>
+                  <p className="text-2xl font-bold text-destructive mt-1">{todayNegative}</p>
                 </div>
               </div>
               {todayNeutral > 0 && (
-                <p className="text-[10px] text-muted-foreground mt-2 text-center">+ {todayNeutral} neutral review{todayNeutral > 1 ? "s" : ""}</p>
+                <p className="text-xs text-muted-foreground text-center">+ {todayNeutral} neutral review{todayNeutral > 1 ? "s" : ""}</p>
               )}
+              {/* Sentiment Pie */}
+              <div className="h-44 mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={sentimentData} dataKey="value" cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3}>
+                      {sentimentData.map((_, idx) => <Cell key={idx} fill={sentimentColors[idx]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "13px" }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex justify-center gap-4 mt-2">
+                {sentimentData.map((d, i) => (
+                  <div key={d.name} className="flex items-center gap-1.5 text-xs">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: sentimentColors[i] }} />
+                    <span>{d.name} ({d.value})</span>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
 
       {/* Reputation Score + Chart Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl h-full">
-            <CardContent className="p-6 flex flex-col items-center justify-center h-full gap-4">
-              <div className="relative h-36 w-36">
-                <svg className="h-36 w-36 -rotate-90" viewBox="0 0 120 120">
+          <Card className="border border-border/40 shadow-card rounded-2xl h-full">
+            <CardContent className="p-6 flex flex-col items-center justify-center h-full gap-5">
+              <div className="relative h-40 w-40">
+                <svg className="h-40 w-40 -rotate-90" viewBox="0 0 120 120">
                   <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--muted))" strokeWidth="7" />
                   <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--primary))" strokeWidth="7"
                     strokeDasharray={`${(reputationScore / 5) * 327} 327`}
                     strokeLinecap="round" className="transition-all duration-1000 drop-shadow-sm" />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-bold font-display">{reputationScore.toFixed(1)}</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">/5.0</span>
+                  <span className="text-5xl font-bold font-display">{reputationScore.toFixed(1)}</span>
+                  <span className="text-sm text-muted-foreground font-medium">/5.0</span>
                 </div>
               </div>
-              <Badge variant="secondary" className={`${repLabel.color} font-semibold text-xs px-3`}>{repLabel.label}</Badge>
-              <p className="text-xs text-muted-foreground text-center">
+              <Badge variant="secondary" className={`${repLabel.color} font-semibold text-sm px-4 py-1`}>{repLabel.label}</Badge>
+              <p className="text-sm text-muted-foreground text-center">
                 {positiveReviews.length} positive · {neutralReviews.length} neutral · {negativeReviews.length} negative
               </p>
             </CardContent>
@@ -308,16 +329,16 @@ export default function Dashboard() {
         </motion.div>
 
         <motion.div variants={item} className="lg:col-span-2">
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
+          <Card className="border border-border/40 shadow-card rounded-2xl">
+            <CardHeader className="pb-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <CardTitle className="text-sm font-semibold">Ratings Over Time</CardTitle>
-                <div className="flex gap-1 bg-muted/60 rounded-lg p-0.5">
+                <CardTitle className="text-base font-semibold">Review Trends Over Time</CardTitle>
+                <div className="flex gap-1 bg-muted/60 rounded-xl p-1">
                   {[{ key: "7d", label: "7D" }, { key: "30d", label: "30D" }, { key: "12m", label: "12M" }].map((f) => (
                     <button
                       key={f.key}
                       onClick={() => setChartFilter(f.key as any)}
-                      className={`px-3 py-1 text-[11px] font-medium rounded-md transition-all ${chartFilter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                      className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all ${chartFilter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                     >
                       {f.label}
                     </button>
@@ -326,20 +347,20 @@ export default function Dashboard() {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="h-56">
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorRatings" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px", boxShadow: "var(--shadow-elevated)" }} />
-                    <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#colorRatings)" dot={{ r: 3, fill: "hsl(var(--primary))", strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))" }} />
+                    <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "13px", boxShadow: "var(--shadow-elevated)" }} />
+                    <Area type="monotone" dataKey="count" name="Reviews" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#colorRatings)" dot={{ r: 3, fill: "hsl(var(--primary))", strokeWidth: 0 }} activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(var(--card))" }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -348,178 +369,142 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Rating Distribution + Table Performance */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Rating Distribution Bar Chart + Keyword Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-primary" /> Rating Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {distribution.map((d) => (
-                <div key={d.star} className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 w-10 shrink-0">
-                    <span className="text-sm font-semibold">{d.star}</span>
-                    <Star className="h-3 w-3 fill-primary text-primary" />
-                  </div>
-                  <div className="flex-1 h-4 bg-muted/60 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(d.count / maxCount) * 100}%` }}
-                      transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                      className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
-                    />
-                  </div>
-                  <span className="text-sm text-muted-foreground w-8 text-right font-semibold">{d.count}</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <TableProperties className="h-4 w-4 text-primary" /> Table Performance
+          <Card className="border border-border/40 shadow-card rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" /> Rating Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {tableStats.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No table data yet.</p>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {tableStats.slice(0, 6).map((t) => (
-                    <div key={t.table} className="p-3 rounded-lg bg-muted/40 border border-border/30 space-y-1 hover:bg-muted/60 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold">Table {t.table}</span>
-                        <div className="flex items-center gap-0.5">
-                          <Star className="h-3 w-3 fill-primary text-primary" />
-                          <span className="text-xs font-bold">{t.avg}</span>
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">{t.total} reviews · {t.complaints} complaints</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {(bestTable || worstTable) && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {bestTable && <Badge variant="secondary" className="text-[10px] bg-success/10 text-success border-success/20">⭐ Best: Table {bestTable.table} ({bestTable.avg})</Badge>}
-                  {worstTable && worstTable.complaints > 0 && <Badge variant="secondary" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20">⚠️ Most complaints: Table {worstTable.table} ({worstTable.complaints})</Badge>}
-                </div>
-              )}
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={distribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="star" tick={{ fontSize: 14, fill: "hsl(var(--foreground))" }} axisLine={false} tickLine={false} width={40} />
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "13px" }} />
+                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 8, 8, 0]} barSize={28}>
+                      {distribution.map((entry, idx) => (
+                        <Cell key={idx} fill={PIE_COLORS[idx]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
-      </div>
 
-      {/* Keyword Insights + Improvement Suggestions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Keyword Insights</CardTitle>
+          <Card className="border border-border/40 shadow-card rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">Keyword Insights</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5">
               <div>
-                <p className="text-xs text-muted-foreground mb-2 font-medium">Top Positive Keywords</p>
-                <div className="flex flex-wrap gap-1.5">
+                <p className="text-sm text-muted-foreground mb-2 font-medium">✅ Most Common Compliments</p>
+                <div className="flex flex-wrap gap-2">
                   {keywordData.positive.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No data yet</p>
+                    <p className="text-sm text-muted-foreground">No data yet</p>
                   ) : keywordData.positive.slice(0, 8).map((k) => (
-                    <Badge key={k.keyword} variant="secondary" className="bg-success/10 text-success border-success/20 text-[10px]">
+                    <Badge key={k.keyword} variant="secondary" className="bg-success/10 text-success border-success/20 text-xs px-3 py-1">
                       {k.keyword} ({k.count})
                     </Badge>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-2 font-medium">Top Negative Keywords</p>
-                <div className="flex flex-wrap gap-1.5">
+                <p className="text-sm text-muted-foreground mb-2 font-medium">❌ Most Common Complaints</p>
+                <div className="flex flex-wrap gap-2">
                   {keywordData.negative.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No data yet</p>
+                    <p className="text-sm text-muted-foreground">No data yet</p>
                   ) : keywordData.negative.slice(0, 8).map((k) => (
-                    <Badge key={k.keyword} variant="secondary" className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">
+                    <Badge key={k.keyword} variant="secondary" className="bg-destructive/10 text-destructive border-destructive/20 text-xs px-3 py-1">
                       {k.keyword} ({k.count})
                     </Badge>
                   ))}
                 </div>
               </div>
-              <div className="flex items-center gap-3 pt-3 border-t border-border/40">
-                <p className="text-xs text-muted-foreground font-medium">Sentiment</p>
-                <div className="flex-1 h-2.5 bg-muted/60 rounded-full overflow-hidden flex">
+              <div className="flex items-center gap-3 pt-4 border-t border-border/40">
+                <p className="text-sm text-muted-foreground font-medium">Sentiment</p>
+                <div className="flex-1 h-3 bg-muted/60 rounded-full overflow-hidden flex">
                   <div className="h-full bg-success rounded-l-full transition-all" style={{ width: `${ratio}%` }} />
                   <div className="h-full bg-destructive rounded-r-full transition-all" style={{ width: `${100 - parseInt(ratio)}%` }} />
                 </div>
-                <span className="text-xs font-semibold">{ratio}%</span>
+                <span className="text-sm font-bold">{ratio}%</span>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Zap className="h-4 w-4 text-amber-500" /> Improvement Suggestions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {suggestions.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-6">No improvement suggestions yet. Great job! 🎉</p>
-              ) : suggestions.slice(0, 5).map((s) => (
-                <div key={s.keyword} className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/30 hover:bg-muted/60 transition-colors">
-                  <div className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0 text-[10px] font-bold ${
-                    s.priority === "high" ? "bg-destructive/15 text-destructive" : s.priority === "medium" ? "bg-warning/15 text-warning-foreground" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {s.count}
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium">{s.suggestion}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Based on "{s.keyword}" mentions</p>
-                  </div>
-                </div>
-              ))}
             </CardContent>
           </Card>
         </motion.div>
       </div>
 
-      {/* Recent Activity */}
+      {/* Improvement Suggestions */}
       <motion.div variants={item}>
-        <Card className="border border-border/40 shadow-card rounded-xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-primary" /> Recent Activity
+        <Card className="border border-border/40 shadow-card rounded-2xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Zap className="h-5 w-5 text-amber-500" /> Improvement Suggestions
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent>
+            {suggestions.length === 0 ? (
+              <p className="text-base text-muted-foreground text-center py-8">No improvement suggestions yet. Great job! 🎉</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {suggestions.slice(0, 6).map((s) => (
+                  <div key={s.keyword} className="flex items-start gap-3 p-4 rounded-xl bg-muted/40 border border-border/30 hover:bg-muted/60 transition-colors">
+                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold ${
+                      s.priority === "high" ? "bg-destructive/15 text-destructive" : s.priority === "medium" ? "bg-warning/15 text-warning-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {s.count}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{s.suggestion}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Based on "{s.keyword}" mentions · <span className={s.priority === "high" ? "text-destructive" : s.priority === "medium" ? "text-amber-500" : "text-muted-foreground"}>{s.priority} priority</span></p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Recent Activity */}
+      <motion.div variants={item}>
+        <Card className="border border-border/40 shadow-card rounded-2xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" /> Recent Reviews
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
             {reviews.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No reviews yet.</p>
-            ) : reviews.slice(0, 8).map((r) => (
-              <div key={r.id} className={`flex gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${r.rating <= 2 ? "bg-destructive/5 border-destructive/20" : "bg-muted/30 border-border/20"}`}>
-                <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${r.rating <= 2 ? "bg-destructive/15" : "bg-gradient-to-br from-primary/15 to-primary/5"}`}>
-                  <span className={`text-xs font-bold ${r.rating <= 2 ? "text-destructive" : "text-primary"}`}>{r.customer_name.charAt(0)}</span>
+              <p className="text-base text-muted-foreground text-center py-8">No reviews yet.</p>
+            ) : reviews.slice(0, 6).map((r) => (
+              <div key={r.id} className={`flex gap-4 p-4 rounded-xl border hover:bg-muted/50 transition-colors ${r.rating <= 2 ? "bg-destructive/5 border-destructive/20" : "bg-muted/30 border-border/20"}`}>
+                <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${r.rating <= 2 ? "bg-destructive/15" : "bg-gradient-to-br from-primary/15 to-primary/5"}`}>
+                  <span className={`text-sm font-bold ${r.rating <= 2 ? "text-destructive" : "text-primary"}`}>{r.customer_name.charAt(0)}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium">{r.customer_name}</span>
+                    <span className="text-sm font-semibold">{r.customer_name}</span>
                     <div className="flex gap-px">
                       {Array.from({ length: 5 }).map((_, j) => (
-                        <Star key={j} className={`h-3 w-3 ${j < r.rating ? (r.rating <= 2 ? "fill-destructive text-destructive" : "fill-primary text-primary") : "text-muted-foreground/20"}`} />
+                        <Star key={j} className={`h-4 w-4 ${j < r.rating ? (r.rating <= 2 ? "fill-destructive text-destructive" : "fill-primary text-primary") : "text-muted-foreground/20"}`} />
                       ))}
                     </div>
-                    {(r as any).table_number && <Badge variant="outline" className="text-[9px] h-4 border-border/40">Table {(r as any).table_number}</Badge>}
-                    {r.rating <= 2 && <Badge className="text-[9px] bg-destructive/15 text-destructive border-0">⚠️ Alert</Badge>}
-                    <span className="text-[10px] text-muted-foreground ml-auto">{new Date(r.created_at).toLocaleDateString()}</span>
+                    {r.table_number && <Badge variant="outline" className="text-xs h-5 border-border/40">Table {r.table_number}</Badge>}
+                    {r.rating <= 2 && <Badge className="text-xs bg-destructive/15 text-destructive border-0">⚠️ Alert</Badge>}
+                    <span className="text-xs text-muted-foreground ml-auto">{new Date(r.created_at).toLocaleDateString()}</span>
                   </div>
-                  {r.text && <p className="text-xs text-muted-foreground mt-0.5 truncate">{r.text}</p>}
-                  <div className="mt-1.5 p-2 rounded-md bg-primary/5 border border-primary/10">
-                    <p className="text-[10px] text-muted-foreground font-medium">🏪 Restaurant Reply</p>
-                    <p className="text-[11px] text-foreground/80 mt-0.5">{generateAutoReply(r.rating)}</p>
+                  {r.text && <p className="text-sm text-muted-foreground mt-1">{r.text}</p>}
+                  <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <p className="text-xs text-muted-foreground font-medium">🤖 AI Reply</p>
+                    <p className="text-sm text-foreground/80 mt-0.5">{generateSmartReply(r.rating, r.text || "")}</p>
                   </div>
                 </div>
               </div>
