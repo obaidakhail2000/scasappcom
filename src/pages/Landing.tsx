@@ -4,15 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Footer } from "@/components/Footer";
 import {
-  QrCode,
-  Star,
-  BarChart3,
-  MessageSquare,
-  Shield,
-  Zap,
-  ArrowRight,
-  CheckCircle2,
-  Utensils,
+  QrCode, Star, BarChart3, MessageSquare, Shield, Zap, ArrowRight, CheckCircle2, Utensils,
 } from "lucide-react";
 
 const features = [
@@ -21,7 +13,7 @@ const features = [
   { icon: Shield, title: "Smart Review Routing", desc: "Positive reviews go to Google automatically. Negative feedback stays private for your improvement." },
   { icon: BarChart3, title: "Analytics Dashboard", desc: "Track ratings, sentiment trends, keyword analysis, and table performance in real-time." },
   { icon: Utensils, title: "Multi Restaurant", desc: "Manage multiple restaurant locations from a single dashboard with separate analytics." },
-  { icon: Zap, title: "Auto Responses", desc: "AI-powered automatic reply suggestions for every review based on sentiment analysis." },
+  { icon: Zap, title: "AI Reply Generator", desc: "Automatically generate professional, context-aware replies for every review based on sentiment analysis." },
 ];
 
 const stats = [
@@ -39,23 +31,21 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Nav */}
       <nav className="sticky top-0 z-50 border-b border-border/40 bg-card/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
               <Star className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-sm md:text-base">Google Review Booster</span>
+            <span className="font-display font-bold text-sm md:text-base">Meta Automation Menu</span>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="rounded-lg">Sign In</Button>
-            <Button size="sm" onClick={() => navigate("/auth")} className="rounded-lg gap-1">Get Started <ArrowRight className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="rounded-xl">Sign In</Button>
+            <Button size="sm" onClick={() => navigate("/auth")} className="rounded-xl gap-1">Get Started <ArrowRight className="h-3.5 w-3.5" /></Button>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/10" />
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
@@ -66,10 +56,10 @@ export default function Landing() {
               <Zap className="h-3.5 w-3.5" /> Smart Restaurant Automation
             </div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-extrabold tracking-tight leading-[1.1] max-w-4xl mx-auto">
-              Google Review Booster
+              Meta Automation
               <br />
               <span className="bg-gradient-to-r from-primary via-primary/80 to-accent-foreground bg-clip-text text-transparent">
-                for Restaurants
+                Menu
               </span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mt-6 leading-relaxed">
@@ -87,7 +77,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats */}
       <section className="border-y border-border/40 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -101,7 +90,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-20">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-display font-bold">Everything You Need to Boost Reviews</h2>
@@ -124,7 +112,6 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* How it works */}
       <section className="bg-muted/30 border-y border-border/40">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-20">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-16">
@@ -149,14 +136,13 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-20">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
           <Card className="border-0 bg-gradient-to-br from-primary to-primary/80 rounded-3xl overflow-hidden shadow-2xl shadow-primary/20">
             <CardContent className="p-10 md:p-16 text-center text-primary-foreground">
               <h2 className="text-3xl md:text-4xl font-display font-extrabold mb-4">Ready to Boost Your Reviews?</h2>
               <p className="text-primary-foreground/80 max-w-lg mx-auto mb-8 text-lg">
-                Join restaurants already using Google Review Booster to increase positive reviews and improve service quality.
+                Join restaurants already using Meta Automation Menu to increase positive reviews and improve service quality.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Button size="lg" variant="secondary" onClick={() => navigate("/auth")} className="rounded-xl text-base px-8 gap-2 font-semibold">

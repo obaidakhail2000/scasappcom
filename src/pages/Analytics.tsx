@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { analyzeMultipleReviews, generateImprovementSuggestions, calculateReputationScore, getReputationLabel } from "@/lib/review-analysis";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
 
-const PIE_COLORS = ["hsl(var(--destructive))", "hsl(var(--destructive))", "hsl(var(--warning))", "hsl(var(--primary))", "hsl(var(--success))"];
+const PIE_COLORS = ["hsl(var(--success))", "hsl(var(--warning))", "hsl(var(--destructive))"];
 
 export default function Analytics() {
   const { data: reviews = [] } = useQuery({
@@ -24,10 +25,17 @@ export default function Analytics() {
   const keywordData = analyzeMultipleReviews(reviews);
   const suggestions = generateImprovementSuggestions(keywordData.negative);
   const positiveCount = reviews.filter((r) => r.rating >= 4).length;
-  const negativeCount = reviews.filter((r) => r.rating <= 3).length;
+  const neutralCount = reviews.filter((r) => r.rating === 3).length;
+  const negativeCount = reviews.filter((r) => r.rating <= 2).length;
   const sentimentRatio = totalReviews > 0 ? ((positiveCount / totalReviews) * 100).toFixed(0) : "0";
 
-  const distribution = [1, 2, 3, 4, 5].map((star) => ({ name: `${star} Star`, value: reviews.filter((r) => r.rating === star).length, star }));
+  const distribution = [1, 2, 3, 4, 5].map((star) => ({ name: `${star}★`, value: reviews.filter((r) => r.rating === star).length, star }));
+
+  const sentimentData = [
+    { name: "Positive", value: positiveCount },
+    { name: "Neutral", value: neutralCount },
+    { name: "Negative", value: negativeCount },
+  ];
 
   const monthlyData = Array.from({ length: 12 }, (_, i) => {
     const d = new Date(); d.setMonth(d.getMonth() - (11 - i));
@@ -37,39 +45,48 @@ export default function Analytics() {
     return { label: d.toLocaleDateString("en", { month: "short" }), reviews: monthReviews.length, avgRating: parseFloat(avg.toFixed(1)) };
   });
 
-  const tableMap = new Map<string, { total: number; sum: number; complaints: number }>();
-  reviews.forEach((r) => {
-    const t = (r as any).table_number || "N/A";
-    const entry = tableMap.get(t) || { total: 0, sum: 0, complaints: 0 };
-    entry.total++; entry.sum += r.rating; if (r.rating <= 3) entry.complaints++;
-    tableMap.set(t, entry);
-  });
-  const tableStats = Array.from(tableMap.entries()).map(([table, s]) => ({ table, avg: parseFloat((s.sum / s.total).toFixed(1)), total: s.total, complaints: s.complaints })).sort((a, b) => b.avg - a.avg);
+  // Weekly stats
+  const now = new Date();
+  const thisWeekStart = new Date(now); thisWeekStart.setDate(now.getDate() - 7);
+  const lastWeekStart = new Date(now); lastWeekStart.setDate(now.getDate() - 14);
+  const thisWeekReviews = reviews.filter((r) => new Date(r.created_at) >= thisWeekStart);
+  const lastWeekReviews = reviews.filter((r) => { const d = new Date(r.created_at); return d >= lastWeekStart && d < thisWeekStart; });
+  const thisWeekAvg = thisWeekReviews.length > 0 ? thisWeekReviews.reduce((s, r) => s + r.rating, 0) / thisWeekReviews.length : 0;
+  const lastWeekAvg = lastWeekReviews.length > 0 ? lastWeekReviews.reduce((s, r) => s + r.rating, 0) / lastWeekReviews.length : 0;
+
+  // Monthly stats
+  const thisMonth = new Date(); const thisMonthStart = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1);
+  const lastMonthStart = new Date(thisMonth.getFullYear(), thisMonth.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 0);
+  const thisMonthReviews = reviews.filter((r) => new Date(r.created_at) >= thisMonthStart);
+  const lastMonthRevs = reviews.filter((r) => { const d = new Date(r.created_at); return d >= lastMonthStart && d <= lastMonthEnd; });
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-[1400px] mx-auto">
+      <BackToDashboard />
       <motion.div variants={item}>
-        <h1 className="text-2xl font-bold font-display">Analytics & Insights</h1>
-        <p className="text-muted-foreground text-sm mt-1">Deep dive into your review data and customer sentiment.</p>
+        <h1 className="text-3xl font-bold font-display">Analytics & Insights</h1>
+        <p className="text-muted-foreground text-sm mt-1">Deep dive into your review data, sentiment, and performance trends.</p>
       </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { title: "Total Reviews", value: totalReviews, icon: MessageSquare, gradient: "from-primary/15 to-primary/5", iconColor: "text-primary" },
           { title: "Avg Rating", value: repScore.toFixed(1), icon: Star, gradient: "from-success/15 to-success/5", iconColor: "text-success" },
-          { title: "Sentiment", value: `${sentimentRatio}%`, icon: TrendingUp, gradient: "from-amber-500/15 to-amber-500/5", iconColor: "text-amber-600" },
+          { title: "Positive %", value: `${sentimentRatio}%`, icon: TrendingUp, gradient: "from-amber-500/15 to-amber-500/5", iconColor: "text-amber-600" },
           { title: "Negative", value: negativeCount, icon: TrendingDown, gradient: "from-destructive/15 to-destructive/5", iconColor: "text-destructive" },
         ].map((s) => (
           <motion.div key={s.title} variants={item}>
-            <Card className="border border-border/40 shadow-card rounded-xl overflow-hidden">
-              <CardContent className="p-4 relative">
+            <Card className="border border-border/40 shadow-card rounded-2xl overflow-hidden">
+              <CardContent className="p-5 relative">
                 <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-60`} />
                 <div className="relative">
-                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center bg-card shadow-sm ${s.iconColor} mb-2`}>
-                    <s.icon className="h-4 w-4" />
+                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center bg-card shadow-sm ${s.iconColor} mb-3`}>
+                    <s.icon className="h-5 w-5" />
                   </div>
-                  <p className="text-xl font-bold">{s.value}</p>
-                  <p className="text-[11px] text-muted-foreground font-medium">{s.title}</p>
+                  <p className="text-3xl font-bold">{s.value}</p>
+                  <p className="text-sm text-muted-foreground font-medium mt-1">{s.title}</p>
                 </div>
               </CardContent>
             </Card>
@@ -77,27 +94,69 @@ export default function Analytics() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Weekly & Monthly Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <motion.div variants={item}>
+          <Card className="border border-border/40 shadow-card rounded-2xl">
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Weekly Statistics</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">This Week Reviews</p>
+                  <p className="text-2xl font-bold mt-1">{thisWeekReviews.length}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">This Week Avg</p>
+                  <p className="text-2xl font-bold mt-1">{thisWeekAvg.toFixed(1)} ⭐</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 text-center">
+                <p className="text-sm font-semibold text-primary">
+                  Last week: {lastWeekAvg.toFixed(1)} → This week: {thisWeekAvg.toFixed(1)} ({thisWeekAvg >= lastWeekAvg ? "+" : ""}{(thisWeekAvg - lastWeekAvg).toFixed(1)})
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="border border-border/40 shadow-card rounded-2xl">
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Monthly Statistics</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">This Month</p>
+                  <p className="text-2xl font-bold mt-1">{thisMonthReviews.length}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">Last Month</p>
+                  <p className="text-2xl font-bold mt-1">{lastMonthRevs.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <motion.div variants={item} className="lg:col-span-2">
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Review Volume (12 Months)</CardTitle>
-            </CardHeader>
+          <Card className="border border-border/40 shadow-card rounded-2xl">
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Review Volume (12 Months)</CardTitle></CardHeader>
             <CardContent>
-              <div className="h-64">
+              <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={monthlyData}>
                     <defs>
                       <linearGradient id="colorReviewsAnalytics" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px", boxShadow: "var(--shadow-elevated)" }} />
-                    <Area type="monotone" dataKey="reviews" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#colorReviewsAnalytics)" />
+                    <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "13px", boxShadow: "var(--shadow-elevated)" }} />
+                    <Area type="monotone" dataKey="reviews" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#colorReviewsAnalytics)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -106,26 +165,24 @@ export default function Analytics() {
         </motion.div>
 
         <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Rating Breakdown</CardTitle>
-            </CardHeader>
+          <Card className="border border-border/40 shadow-card rounded-2xl">
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Sentiment Breakdown</CardTitle></CardHeader>
             <CardContent>
-              <div className="h-52">
+              <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={distribution} dataKey="value" cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={3}>
-                      {distribution.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx]} />)}
+                    <Pie data={sentimentData} dataKey="value" cx="50%" cy="50%" innerRadius={45} outerRadius={80} paddingAngle={3}>
+                      {sentimentData.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx]} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "13px" }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex flex-wrap gap-2 justify-center mt-2">
-                {distribution.map((d, i) => (
-                  <div key={d.star} className="flex items-center gap-1 text-[10px]">
-                    <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: PIE_COLORS[i] }} />
-                    <span>{d.star}★ ({d.value})</span>
+              <div className="flex flex-wrap gap-3 justify-center mt-3">
+                {sentimentData.map((d, i) => (
+                  <div key={d.name} className="flex items-center gap-1.5 text-xs">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }} />
+                    <span className="font-medium">{d.name} ({d.value})</span>
                   </div>
                 ))}
               </div>
@@ -134,23 +191,43 @@ export default function Analytics() {
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Rating Distribution + Keywords + Suggestions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl h-full">
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Keyword Analysis</CardTitle></CardHeader>
+          <Card className="border border-border/40 shadow-card rounded-2xl h-full">
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Rating Distribution</CardTitle></CardHeader>
+            <CardContent>
+              <div className="h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={distribution}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={true} vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 13, fill: "hsl(var(--foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "13px" }} />
+                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} barSize={36} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={item}>
+          <Card className="border border-border/40 shadow-card rounded-2xl h-full">
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Top Keywords</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-2 font-medium">✅ Positive</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {keywordData.positive.length === 0 ? <p className="text-xs text-muted-foreground">No data</p> :
-                    keywordData.positive.slice(0, 10).map((k) => <Badge key={k.keyword} variant="secondary" className="bg-success/10 text-success border-success/20 text-[10px]">{k.keyword} ({k.count})</Badge>)}
+                <p className="text-sm text-muted-foreground mb-2 font-medium">✅ Most Praised</p>
+                <div className="flex flex-wrap gap-2">
+                  {keywordData.positive.length === 0 ? <p className="text-sm text-muted-foreground">No data</p> :
+                    keywordData.positive.slice(0, 8).map((k) => <Badge key={k.keyword} variant="secondary" className="bg-success/10 text-success border-success/20 text-xs px-3 py-1">{k.keyword} ({k.count})</Badge>)}
                 </div>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-2 font-medium">❌ Negative</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {keywordData.negative.length === 0 ? <p className="text-xs text-muted-foreground">No data</p> :
-                    keywordData.negative.slice(0, 10).map((k) => <Badge key={k.keyword} variant="secondary" className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">{k.keyword} ({k.count})</Badge>)}
+                <p className="text-sm text-muted-foreground mb-2 font-medium">❌ Most Complained</p>
+                <div className="flex flex-wrap gap-2">
+                  {keywordData.negative.length === 0 ? <p className="text-sm text-muted-foreground">No data</p> :
+                    keywordData.negative.slice(0, 8).map((k) => <Badge key={k.keyword} variant="secondary" className="bg-destructive/10 text-destructive border-destructive/20 text-xs px-3 py-1">{k.keyword} ({k.count})</Badge>)}
                 </div>
               </div>
             </CardContent>
@@ -158,38 +235,19 @@ export default function Analytics() {
         </motion.div>
 
         <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl h-full">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2"><Zap className="h-4 w-4 text-amber-500" /> Suggestions</CardTitle>
+          <Card className="border border-border/40 shadow-card rounded-2xl h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2"><Zap className="h-5 w-5 text-amber-500" /> Suggestions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {suggestions.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Everything looks great! 🎉</p> :
-                suggestions.slice(0, 6).map((s) => (
-                  <div key={s.keyword} className="p-2.5 rounded-lg bg-muted/40 border border-border/30 flex items-start gap-2 hover:bg-muted/60 transition-colors">
-                    <div className={`h-5 w-5 rounded-md flex items-center justify-center shrink-0 text-[9px] font-bold ${s.priority === "high" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning-foreground"}`}>{s.count}</div>
+            <CardContent className="space-y-3">
+              {suggestions.length === 0 ? <p className="text-sm text-muted-foreground text-center py-8">Everything looks great! 🎉</p> :
+                suggestions.slice(0, 5).map((s) => (
+                  <div key={s.keyword} className="p-3 rounded-xl bg-muted/40 border border-border/30 flex items-start gap-3 hover:bg-muted/60 transition-colors">
+                    <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold ${s.priority === "high" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning-foreground"}`}>{s.count}</div>
                     <div>
-                      <p className="text-[11px] font-medium">{s.suggestion}</p>
-                      <p className="text-[9px] text-muted-foreground">"{s.keyword}"</p>
+                      <p className="text-sm font-medium">{s.suggestion}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">"{s.keyword}"</p>
                     </div>
-                  </div>
-                ))}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={item}>
-          <Card className="border border-border/40 shadow-card rounded-xl h-full">
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Table Rankings</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              {tableStats.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">No data yet</p> :
-                tableStats.map((t, i) => (
-                  <div key={t.table} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/40 border border-border/30 hover:bg-muted/60 transition-colors">
-                    <div className={`h-7 w-7 rounded-md flex items-center justify-center text-xs font-bold ${i === 0 ? "bg-success/15 text-success" : i === tableStats.length - 1 ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{i + 1}</div>
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold">Table {t.table}</p>
-                      <p className="text-[10px] text-muted-foreground">{t.total} reviews · {t.complaints} complaints</p>
-                    </div>
-                    <div className="flex items-center gap-0.5"><Star className="h-3 w-3 fill-primary text-primary" /><span className="text-sm font-bold">{t.avg}</span></div>
                   </div>
                 ))}
             </CardContent>
